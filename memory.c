@@ -1,17 +1,20 @@
 #include <stdlib.h>
 #include "memory.h"
 
+/* Node for the free-list */
 typedef struct FreeSeg {
-    int start;               
-    int len;           
-    struct FreeSeg *next;
+    int start;              // first free cell index 
+    int len;                // length of free segment 
+    struct FreeSeg *next;   // next segment in ascending start order
 } FreeSeg;
 
+/* Memory representation */
 struct Memory {
-	int cells[MEM_CELLS];
-	FreeSeg *free_list;
+	int cells[MEM_CELLS];  // simulated memory cells
+	FreeSeg *free_list;    // free segments linked list, sorted by start
 };
 
+/* Allocate a new free segment node. Returns NULL on failure */
 static FreeSeg *newSeg(int start, int len) {
 	FreeSeg *s = (FreeSeg *)malloc(sizeof(FreeSeg));
 	if (!s) return NULL;
@@ -21,51 +24,68 @@ static FreeSeg *newSeg(int start, int len) {
 	return s;
 }
 
+/* End index of a free segment */
 static int segEnd(const FreeSeg *s) {
 	return s->start + s->len;
 }
 
-// insert new free segment where it belongs in the list
+/* Insert segment into the list in ascending order. 
+ * Does not handle segment overlap */
 static void insertSorted(FreeSeg **head, FreeSeg *seg) {
 	if (seg == NULL) {
 		return;
 	}
 
+	// Insert at head if the list is empty or if the segment
+	// belongs before current head
 	if (*head == NULL || seg->start < (*head)->start) {
 		seg->next = *head;
 		*head = seg;
 		return;
 	}
-
+        
+	// Find insertion point
 	FreeSeg *cur = *head;
 	while (cur->next != NULL && cur->next->start < seg->start) {
 		cur = cur->next;
 	}
+
+	// Place segment between cur and cur->next
 	seg->next = cur->next;
 	cur->next = seg;
 }
 
-// combine segments that overlap
+/* Merge overlapping/adjacency segments in sorted free-list */
 static void combine(FreeSeg *head) {
 	FreeSeg *cur = head;
+
+	// Because list is sorted, only cur and cur->next can overlap
 	while (cur != NULL && cur->next != NULL) {
 		FreeSeg *next = cur->next;
 		int curEnd = segEnd(cur);
+
+		// Overlap OR adjacency (>=)
 		if (curEnd >= next->start) {
+			// Extend cur to cover next
 			int newEnd = curEnd;
 			int nextEnd = segEnd(next);
 			if (nextEnd > newEnd) {
 				newEnd = nextEnd;
 			}
+
 			cur->len = newEnd - cur->start;
+
+			// Remove next node from list and free
 			cur->next = next->next;
 			free(next);
 		} else {
+			// No merge possible, advance
 			cur = cur->next;
 		}
 	}
 }
 
+/* Validate a (start, len) segment and an index i within it */
 static int indexCheck(int start, int len, int i) {
 	if (start < 0 || start >= MEM_CELLS) {
 		return 0;
@@ -82,21 +102,28 @@ static int indexCheck(int start, int len, int i) {
 	return 1;
 }
 
+/* Initialize all cells to 0 and allocator to one big free block */
 void memInit(Memory *m) {
 	if (m == NULL) {
 		return;
 	}
+
+	// Clear memory contents
 	for (int i = 0; i < MEM_CELLS; i++) {
 		m->cells[i] = 0;
 	}
+
+	// One free segment covering the whole memory
 	m->free_list = newSeg(0, MEM_CELLS);
 }
 
+// Free all free-list nodes
 void memFree(Memory *m) {
 	if (m == NULL) {
 		return;
 	}
 
+	// Walk through the list and free each node
 	FreeSeg *cur = m->free_list;
 	while (cur != NULL) {
 		FreeSeg *next = cur->next;
@@ -106,7 +133,7 @@ void memFree(Memory *m) {
 	m->free_list = NULL;
 }
 
-// returns 0/1 on failure/success and writes start index into int
+/* Allocate n cells using a best-fit policy (1 on success, 0 on failure) */
 int memAlloc(Memory *m, int n, int *outStart) {
 	if (m == NULL || outStart == NULL) {
 		return 0;
@@ -115,20 +142,22 @@ int memAlloc(Memory *m, int n, int *outStart) {
 		return 0;
 	}
 
+	// Find best free segment (smallest with len >= n)
 	FreeSeg *prev = NULL;
 	FreeSeg *bestPrev = NULL;
 
 	FreeSeg *prev = NULL;
 	FreeSeg *cur = m->free_list;
 
-	// traverse through the whole list to find best fit free block
+	// Traverse through the whole list to find best fit free block
 	while (cur != NULL) {
 		if (cur->len >= n) {
+			// Update best choice
 			if (best == NULL || cur->len < best->len) {
 				best = cur;
 				bestPrev = prev;
 
-				// break if we find free block of exact size
+				// Perfect fit, stop searching
 				if (cur->len == n) {
 					break;
 				}
@@ -138,15 +167,15 @@ int memAlloc(Memory *m, int n, int *outStart) {
 		cur = cur->next;
 	}
 
-	// not enough space in memory
+	// No segment large enough
 	if (best == NULL) {
 		return 0;
 	}
 
 	int start = best->start;
 
-	// free the free block if we found exact size
 	if (best->len == n) {
+		// Perfect fit so remove best from list
 		if (bestPrev != NULL) {
 			bestPrev->next = best->next;
 		}
@@ -156,27 +185,28 @@ int memAlloc(Memory *m, int n, int *outStart) {
 		free(best);
 	} 
 	
-	// reduce free block's size by n
 	else {
+		// shrink free segment by consuming from its start
 		best->start += n;
 		best->len -= n;
 	}
 
-	// initialise space as 0
+	// Initialise allocated cells to 0
 	for (int i = 0; i <n; i++) {
 		m->cells[start + i] = 0;
 	}
 
-	// write memory address of the start of the variable in memory
 	*outStart = start;
 	return 1;
 }
 
-// frees blocks in memory
+/* Add a block to the free list and merge adjacent/overlapping segments */
 void memFreeBlock(Memory *m, int start, int len) {
 	if (m == NULL) {
 		return;
 	}
+
+	// Sanity checks for boundaries
 	if (len <= 0) {
 		return;
 	}
@@ -187,20 +217,24 @@ void memFreeBlock(Memory *m, int start, int len) {
 		return;
 	}
 
+	// Create a new free segment node for the block
 	FreeSeg *seg = newSeg(start, len);
 	if (seg == NULL) {
 		return;
 	}
 
+	// Insert in sorted order and handle overlap/adjacency
 	insertSorted(&m->free_list, seg);
 	combine(m->free_list);
 }
 
-// boolean result, but writes it into an int
+/* Safe read of block[i] into *outValue */
 int memRead(const Memory *m, int start, int len, int i, int *outValue) {
 	if (m == NULL || outValue == NULL) {
 		return 0;
 	}
+
+	// Ensure access within allocated block
 	if (!indexCheck(start, len, i)) {
 		return 0;
 	}
@@ -208,6 +242,7 @@ int memRead(const Memory *m, int start, int len, int i, int *outValue) {
 	return 1;
 }
 
+/* Safe write into block[i] */
 int memWrite(Memory *m, int start, int len, int i, int value) {
 	if (m == NULL) {
 		return 0;
@@ -220,7 +255,7 @@ int memWrite(Memory *m, int start, int len, int i, int value) {
 	return 1;
 }
 
-//increases value in position by one
+/* Safe increment block[i]++ */
 int memInc(Memory *m, int start, int len, int i) {
 	if (m == NULL) {
 		return 0;
@@ -233,6 +268,7 @@ int memInc(Memory *m, int start, int len, int i) {
 	return 1;
 }
 
+/* Safe decrement block[i]-- */
 int memDec(Memory *m, int start, int len, int i) {
 	if (m == NULL) {
 		return 0;
