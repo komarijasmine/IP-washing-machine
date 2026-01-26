@@ -4,6 +4,7 @@
 #include <stddef.h>
 
 #define MEM_CELLS 100
+
 /**
  * @file memory.h
  * @brief Embedded memory with an allocator and bounds-checked access 
