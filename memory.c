@@ -116,36 +116,60 @@ int memAlloc(Memory *m, int n, int *outStart) {
 	}
 
 	FreeSeg *prev = NULL;
+	FreeSeg *bestPrev = NULL;
+
+	FreeSeg *prev = NULL;
 	FreeSeg *cur = m->free_list;
 
+	// traverse through the whole list to find best fit free block
 	while (cur != NULL) {
 		if (cur->len >= n) {
-			int start = cur->start;
+			if (best == NULL || cur->len < best->len) {
+				best = cur;
+				bestPrev = prev;
 
-			// allocate from front of the segment
-			cur->start += n;
-			cur->len -= n;
-
-			if (cur->len == 0) {
-				if (prev != NULL) {
-					prev->next = cur->next;
+				// break if we find free block of exact size
+				if (cur->len == n) {
+					break;
 				}
-				else {
-					m->free_list = cur->next;
-				}
-				free(cur);
-				cur = NULL;
 			}
-			for (int i = 0; i < n; i++) {
-				m->cells[start + i] = 0;
-			}
-			*outStart = start;
-			return 1;
 		}
 		prev = cur;
 		cur = cur->next;
 	}
-	return 0;
+
+	// not enough space in memory
+	if (best == NULL) {
+		return 0;
+	}
+
+	int start = best->start;
+
+	// free the free block if we found exact size
+	if (best->len == n) {
+		if (bestPrev != NULL) {
+			bestPrev->next = best->next;
+		}
+		else {
+			m->free_list = best->next;
+		}
+		free(best);
+	} 
+	
+	// reduce free block's size by n
+	else {
+		best->start += n;
+		best->len -= n;
+	}
+
+	// initialise space as 0
+	for (int i = 0; i <n; i++) {
+		m->cells[start + i] = 0;
+	}
+
+	// write memory address of the start of the variable in memory
+	*outStart = start;
+	return 1;
 }
 
 // frees blocks in memory
