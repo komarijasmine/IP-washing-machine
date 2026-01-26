@@ -1,0 +1,43 @@
+\documentclass[a4paper,11pt]{article}
+\usepackage[margin=3cm]{geometry}
+
+\title{Report for Final Project IP Autumn 2026}
+\date{Deadline: 29th Jen.  23:59}
+
+\author{Alex, Komari, Natalia, and Penelope}
+
+\begin{document}
+
+\maketitle
+
+\section*{Task description}
+
+Here you should describe the task that the program should solve.
+Write this in your own words, do not just copy the assignment text.
+
+\section*{Structure of the Project}
+
+Explain and justify how you modularised your code.
+
+\begin{itemize}
+    \item Memory: responsible for managing the memory required by the mini-language. It provides functions to allocate and free contiguous memory blocks as well as to read and modify certain cells in memory. 
+\end{itemize}
+
+\section*{Data Structures and Implementation Choices}
+
+Explain and justify the implementation choices that you made and the main data structures used in the project.
+\begin{itemize}
+    \item Memory: the data structures used are a fixed-size array of 100 integer cells and a linked list to track free memory. Each node of the lost stores the start position and length of a contiguous free block in memory. This implementation was chosen because it allows efficient (de)allocation without scanning the full memory array, while sorted insertion enables easy combination of adjacent free blocks and limits fragmentation.
+\end{itemize}
+
+\section*{Testing}
+
+Explain how you tested your code.Here you should explain and justify the testing strategies that you used. Do not just say "I used the tester program". 
+
+\section*{Self-Reflection}
+
+Explain what you learned during this project
+
+
+
+\end{document}
