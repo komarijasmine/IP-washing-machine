@@ -93,7 +93,7 @@ int memAlloc(Memory *m, int n, int *outStart);
  *  - Region becomes available for future allocations
  *  - Internal free-space tracking is updated
  */
-void memFreeBlock(Memory *m, int start, int len);
+void memFreeBlock(Memory *m, int start);
 
 /*
  * @brief Safe read from an allocated block
@@ -108,7 +108,7 @@ void memFreeBlock(Memory *m, int start, int len);
  *  - returns 1 on success and writes the value to *outValue
  *  - returns 0 on failure
  */
-int memRead(const Memory *m, int start, int len, int i, int *outValue);
+int memRead(const Memory *m, int start, int i, int *outValue);
 
 /*
  * @brief Safe write into an allocated block
@@ -117,7 +117,7 @@ int memRead(const Memory *m, int start, int len, int i, int *outValue);
  *  - Returns 1 on success
  *  - Returns 0 on failure
  */
-int memWrite(Memory *m, int start, int len, int i, int value);
+int memWrite(Memory *m, int start, int i, int value);
 
 /*
  * @brief Safe increment of a cell within an allocated block
@@ -128,7 +128,7 @@ int memWrite(Memory *m, int start, int len, int i, int value);
  *   - Returns 1 on success
  *   - Returns 0 on failure
  */
-int memInc(Memory *m, int start, int len, int i);
+int memInc(Memory *m, int start, int i);
 
 /*
  * @brief Safe decrement of a cell within an allocated block
@@ -139,6 +139,6 @@ int memInc(Memory *m, int start, int len, int i);
  *   - Returns 1 on success
  *   - Returns 0 on failure
  */
-int memDec(Memory*m, int start, int len, int i);
+int memDec(Memory*m, int start, int i);
 
 #endif
