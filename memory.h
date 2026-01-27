@@ -35,23 +35,27 @@ typedef struct Memory Memory;
  */
 int *memCells(Memory *m);
 
-/* @brief Initialize memory and allocator
+/* @brief Initialize and allocate memory object
  *
- * @pre: m is not NULL
+ * If *pm is NULL, memory is allocated
+ *
+ * @param pm Pointer to a Memory pointer
+ *
+ * @pre: pm is not NULL
  * @post: all MEM_CELLS are set to 0. After this call, 
  *        allocations and accesses are valid.
+ *        *pm points to a valid initialized Memory object
+ *
+ * @return MEM_OK on success, error code otherwise
  */
 void memInit(Memory *m);
 
 /*
- * @brief Release internal allocator data.
+ * @brief Free all memory associated with a Memory object
+ * @param m pointer to memory object to destroy
  *
- * @pre: m is not NULL
- * @post: any dynamically allocated internal structures 
- *        used by the allocator are freed
- * Notes:
- *  - Does NOT free m itself
- *  - Call this once at program end to avoid leaks.
+ * @pre: pm is not NULL
+ * @post All memory owned by m is released
  */
 void memFree(Memory *m);
 

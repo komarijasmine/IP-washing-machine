@@ -101,10 +101,19 @@ static int addrOK(int addr) {
 }
 
 /* Initialize all cells to 0 and allocator to one big free block */
-void memInit(Memory *m) {
-	if (m == NULL) {
-		return;
+int memInit(Memory **pm) {
+	if (pm == NULL) {
+		return MEM_ERR_NULL;
 	}
+
+	if (*pm == NULL) {
+		*pm = malloc(sizeof(**pm));
+		if (*pm == NULL) {
+			return MEM_ERR_NOSPACE;
+		}
+	}
+
+	Memory *m = *pm;
 
 	// Clear memory contents
 	for (int i = 0; i < MEM_CELLS; i++) {
@@ -113,6 +122,10 @@ void memInit(Memory *m) {
 
 	// One free segment covering the whole memory
 	m->free_list = newSeg(0, MEM_CELLS);
+	if (m->free:list == NULL) {
+		return MEM_ERR_NOSPACE;
+	}
+	return MEM_OK;
 }
 
 // Free all free-list nodes
@@ -128,7 +141,7 @@ void memFree(Memory *m) {
 		free(cur);
 		cur = next;
 	}
-	m->free_list = NULL;
+	free(m);
 }
 
 /* Allocate n cells using a best-fit policy (1 on success, 0 on failure) */
