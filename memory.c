@@ -1,5 +1,7 @@
 #include <stdlib.h>
+#include <limits.h>
 #include "memory.h"
+
 
 /* Node for the free-list */
 typedef struct FreeSeg {
@@ -86,20 +88,8 @@ static void combine(FreeSeg *head) {
 }
 
 /* Validate a (start, len) segment and an index i within it */
-static int indexCheck(int start, int len, int i) {
-	if (start < 0 || start >= MEM_CELLS) {
-		return 0;
-	}
-	if (len <= 0) {
-		return 0;
-	}
-	if (start + len > MEM_CELLS) {
-		return 0;
-	}
-	if (i < 0 || i>= len) {
-		return 0;
-	}
-	return 1;
+static int addrOK(int addr) {
+	return addr >= 0 && addr < MEM_CELLS;
 }
 
 /* Initialize all cells to 0 and allocator to one big free block */
@@ -136,17 +126,16 @@ void memFree(Memory *m) {
 /* Allocate n cells using a best-fit policy (1 on success, 0 on failure) */
 int memAlloc(Memory *m, int n, int *outStart) {
 	if (m == NULL || outStart == NULL) {
-		return 0;
+		return MEM_ERR_NULL;
 	}
 	if (n <= 0 || n > MEM_CELLS) {
-		return 0;
+		return MEM_ERR_OOB;
 	}
 
 	// Find best free segment (smallest with len >= n)
 	FreeSeg *prev = NULL;
 	FreeSeg *bestPrev = NULL;
-
-	FreeSeg *prev = NULL;
+	FreeSeg *best = NULL;
 	FreeSeg *cur = m->free_list;
 
 	// Traverse through the whole list to find best fit free block
@@ -169,7 +158,7 @@ int memAlloc(Memory *m, int n, int *outStart) {
 
 	// No segment large enough
 	if (best == NULL) {
-		return 0;
+		return MEM_ERR_NOSPACE;
 	}
 
 	int start = best->start;
@@ -197,85 +186,106 @@ int memAlloc(Memory *m, int n, int *outStart) {
 	}
 
 	*outStart = start;
-	return 1;
+	return MEM_OK;
 }
 
 /* Add a block to the free list and merge adjacent/overlapping segments */
-void memFreeBlock(Memory *m, int start, int len) {
+int memFreeBlock(Memory *m, int start) {
 	if (m == NULL) {
-		return;
+		return MEM_ERR_NULL;
 	}
 
-	// Sanity checks for boundaries
-	if (len <= 0) {
-		return;
+	if (!addrOk(start)) {
+	       	return MEM_ERR_OOB;
 	}
-	if (start < 0 || start >= MEM_CELLS) {
-		return;
+
+	int pos = start;
+
+	while (pos < MEM_CELLS && m->cells[pos] != INT_MAX) {
+		pos++;
 	}
-	if (start + len > MEM_CELLS) {
-		return;
+
+	if (pos >= MEM_CELLS) {
+		return MEM_ERR_OOB;
 	}
+
+	int len = (pos - start) + 1;
 
 	// Create a new free segment node for the block
 	FreeSeg *seg = newSeg(start, len);
 	if (seg == NULL) {
-		return;
+		return MEM_ERR_NULL;
 	}
 
 	// Insert in sorted order and handle overlap/adjacency
 	insertSorted(&m->free_list, seg);
 	combine(m->free_list);
+	return MEM_OK;
 }
 
 /* Safe read of block[i] into *outValue */
-int memRead(const Memory *m, int start, int len, int i, int *outValue) {
+int memRead(const Memory *m, int start, int i, int *outValue) {
 	if (m == NULL || outValue == NULL) {
-		return 0;
+		return MEM_ERR_NULL;
 	}
+	if (i < 0) {
+		return MEM_ERR_OOB;
+	}
+	int addr = start + i;
 
 	// Ensure access within allocated block
-	if (!indexCheck(start, len, i)) {
-		return 0;
+	if (!addrOK(addr)) {
+		return MEM_ERR_OOB;
 	}
-	*outValue = m->cells[start + i];
-	return 1;
+	*outValue = m->cells[addr];
+	return MEM_OK;
 }
 
 /* Safe write into block[i] */
-int memWrite(Memory *m, int start, int len, int i, int value) {
+int memWrite(Memory *m, int start, int i, int value) {
 	if (m == NULL) {
-		return 0;
+		return MEM_ERR_NULL;
 	}
-	if (!indexCheck(start, len, i)) {
-		return 0;
+	if (i < 0) return MEM_ERR_OOB;
+	int addr = start + i;
+
+	if (!addrOK(addr)) {
+		return MEM_ERR_OOB;
 	}
 
-	m->cells[start + i] = value;
-	return 1;
+	m->cells[addr] = value;
+	return MEM_OK;
 }
 
 /* Safe increment block[i]++ */
-int memInc(Memory *m, int start, int len, int i) {
+int memInc(Memory *m, int start, int i) {
 	if (m == NULL) {
-		return 0;
+		return MEM_ERR_NULL;
 	}
-	if (!indexCheck(start, len, i)) {
-		return 0;
+	if (i < 0) {
+		return MEM_ERR_OOB;
+	}
+	int addr = start + i;
+	if (!addrOK(addr)) {
+		return MEM_ERR_OOB;
 	}
 
-	m->cells[start + i] += 1;
-	return 1;
+	m->cells[addr] += 1;
+	return MEM_OK;
 }
 
 /* Safe decrement block[i]-- */
-int memDec(Memory *m, int start, int len, int i) {
+int memDec(Memory *m, int start, int i) {
 	if (m == NULL) {
-		return 0;
+		return MEM_ERR_NULL;
 	}
-	if (!indexCheck(start, len, i)) {
-		return 0;
+	if (i < 0) {
+		return MEM_ERR_OOB;
 	}
-	m->cells[start + i] -= 1;
-	return 1;
+	int addr = start + i;
+	if (!addrOK(addr)) {
+		return MEM_ERR_OOB;
+	}
+	m->cells[addr] -= 1;
+	return MEM_OK;
 }

@@ -5,6 +5,11 @@
 
 #define MEM_CELLS 100
 
+#define MEM_OK 1
+#define MEM_ERR_NULL -1
+#define MEM_ERR_OOB -2
+#define MEM_ERR_NOSPACE -3
+
 /**
  * @file memory.h
  * @brief Embedded memory with an allocator and bounds-checked access 
