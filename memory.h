@@ -29,6 +29,12 @@
  * objects through the functions bellow */
 typedef struct Memory Memory;
 
+/* @brief Array representing the memory.
+ * 
+ * @returns pointer to the memory array.
+ */
+int *memCells(Memory *m);
+
 /* @brief Initialize memory and allocator
  *
  * @pre: m is not NULL

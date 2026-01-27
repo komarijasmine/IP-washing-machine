@@ -16,6 +16,14 @@ struct Memory {
 	FreeSeg *free_list;    // free segments linked list, sorted by start
 };
 
+/* returns the array representing memory */
+int *memCells(Memory *m) {
+	if (!m) {
+		return NULL;
+	}
+	return m->cells;
+}
+
 /* Allocate a new free segment node. Returns NULL on failure */
 static FreeSeg *newSeg(int start, int len) {
 	FreeSeg *s = (FreeSeg *)malloc(sizeof(FreeSeg));
