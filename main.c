@@ -12,4 +12,8 @@ while (fgets(line, sizeof(line), file))  {
 }
 
 fclose(file);
+
+// the errors
+
 }
+
