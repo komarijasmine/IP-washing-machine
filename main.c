@@ -50,7 +50,6 @@ int main(void) {
 	
 	fclose(file);
 
-	freeAll();
 	memFree(); // cleanup function
     return 0;
 
