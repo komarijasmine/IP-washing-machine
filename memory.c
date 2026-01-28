@@ -1,3 +1,4 @@
+#include <stdio.h>
 #include <stdlib.h>
 #include <limits.h>
 #include "memory.h"
@@ -120,7 +121,8 @@ int memInit(void) {
 
 	m = malloc(sizeof(Memory));
 	if (m == NULL) {
-		return MEM_ERR_NOSPACE;
+		fprintf(stderr, "Not enough memory.");
+		exit(0);
 	}
 
 	for (int i = 0; i< MEM_CELLS; i++) {
@@ -130,7 +132,8 @@ int memInit(void) {
 	// One free segment covering the whole memory
 	m->free_list = newSeg(0, MEM_CELLS);
 	if (m->free_list == NULL) {
-		return MEM_ERR_NOSPACE;
+		fprintf(stderr, "Not enough memory.");
+		exit(0);
 	}
 	return MEM_OK;
 }
@@ -155,10 +158,12 @@ void memFree(void) {
 /* Allocate n cells using a best-fit policy (1 on success, 0 on failure) */
 int memAlloc(int n, int *outStart) {
 	if (m == NULL || outStart == NULL) {
-		return MEM_ERR_NULL;
+		fprintf(stderr, "Wrong Memory Access.");
+		exit(0);
 	}
 	if (n <= 0 || n > MEM_CELLS) {
-		return MEM_ERR_OOB;
+		fprintf(stderr, "Wrong Memory Access.");
+		exit(0);
 	}
 
 	// Find best free segment (smallest with len >= n)
@@ -187,7 +192,8 @@ int memAlloc(int n, int *outStart) {
 
 	// No segment large enough
 	if (best == NULL) {
-		return MEM_ERR_NOSPACE;
+		fprintf(stderr, "Not enough memory.");
+		exit(0);
 	}
 
 	int start = best->start;
@@ -221,30 +227,37 @@ int memAlloc(int n, int *outStart) {
 /* Add a block to the free list and merge adjacent/overlapping segments */
 int memFreeBlock(int start, int len) {
 	if (m == NULL) {
-		return MEM_ERR_NULL;
+		fprintf(stderr, "Wrong Memory Access.");
+		exit(0);
 	}
 	if (len <= 0) {
-		return MEM_ERR_OOB;
+		fprintf(stderr, "Wrong Memory Access.");
+		exit(0);
+		
 	}
 	if (!addrOK(start) || !addrOK(start + len - 1)) {
-	       	return MEM_ERR_OOB;
+	       	fprintf(stderr, "Wrong Memory Access.");
+		exit(0);
 	}
 
 	if (!isAllocated(start)) {
-		return MEM_ERR_FREE;
+		fprintf(stderr, "Wrong Memory Access.");
+		exit(0);
 	}
 
 	// ensure entire block is allocated
 	for (int i = 0; i< len; i++) {
 		if (!isAllocated(start + i)) {
-			return MEM_ERR_FREE;
+			fprintf(stderr, "Wrong Memory Access.");
+			exit(0);
 		}
 	}
 
 	// Create a new free segment node for the block
 	FreeSeg *seg = newSeg(start, len);
 	if (seg == NULL) {
-		return MEM_ERR_NULL;
+		fprintf(stderr, "Wrong Memory Access.");
+		exit(0);
 	}
 
 	// Insert in sorted order and handle overlap/adjacency
@@ -256,16 +269,19 @@ int memFreeBlock(int start, int len) {
 /* Safe read of block[i] into *outValue */
 int memRead(int i, int *outValue) {
 	if (m == NULL || outValue == NULL) {
-		return MEM_ERR_NULL;
+		fprintf(stderr, "Wrong Memory Access.");
+		exit(0);
 	}
 
 	// Ensure access within allocated block
 	if (!addrOK(i)) {
-		return MEM_ERR_OOB;
+		fprintf(stderr, "Wrong Memory Access.");
+		exit(0);
 	}
 
 	if (!isAllocated(i)) {
-		return MEM_ERR_FREE;
+		fprintf(stderr, "Wrong Memory Access.");
+		exit(0);
 	}
 
 	*outValue = m->cells[i];
@@ -275,15 +291,18 @@ int memRead(int i, int *outValue) {
 /* Safe write into block[i] */
 int memWrite(int i, int value) {
 	if (m == NULL) {
-		return MEM_ERR_NULL;
+		fprintf(stderr, "Wrong Memory Access.");
+		exit(0);
 	}
 
 	if (!addrOK(i)) {
-		return MEM_ERR_OOB;
+		fprintf(stderr, "Wrong Memory Access.");
+		exit(0);
 	}
 
 	if (!isAllocated(i)) {
-		return MEM_ERR_FREE;
+		fprintf(stderr, "Wrong Memory Access.");
+		exit(0);
 	}
 
 	m->cells[i] = value;
@@ -293,15 +312,18 @@ int memWrite(int i, int value) {
 /* Safe increment block[i]++ */
 int memInc(int i) {
 	if (m == NULL) {
-		return MEM_ERR_NULL;
+		fprintf(stderr, "Wrong Memory Access.");
+		exit(0);
 	}
 	
 	if (!addrOK(i)) {
-		return MEM_ERR_OOB;
+		fprintf(stderr, "Wrong Memory Access.");
+		exit(0);
 	}
 
 	if (!isAllocated(i)) {
-		return MEM_ERR_FREE;
+		fprintf(stderr, "Wrong Memory Access.");
+		exit(0);
 	}
 
 	m->cells[i] += 1;
@@ -311,15 +333,18 @@ int memInc(int i) {
 /* Safe decrement block[i]-- */
 int memDec(int i) {
 	if (m == NULL) {
-		return MEM_ERR_NULL;
+		fprintf(stderr, "Wrong Memory Access.");
+		exit(0);
 	}
 	
 	if (!addrOK(i)) {
-		return MEM_ERR_OOB;
+		fprintf(stderr, "Wrong Memory Access.");
+		exit(0);
 	}
 
 	if (!isAllocated(i)) {
-		return MEM_ERR_FREE;
+		fprintf(stderr, "Wrong Memory Access.");
+		exit(0);
 	}
 	m->cells[i] -= 1;
 	return MEM_OK;

@@ -6,10 +6,6 @@
 #define MEM_CELLS 100
 
 #define MEM_OK 1
-#define MEM_ERR_NULL -1
-#define MEM_ERR_OOB -2
-#define MEM_ERR_NOSPACE -3
-#define MEM_ERR_FREE -4
 
 /**
  * @file memory.h
