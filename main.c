@@ -1,7 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "functions.h"
 #include "interpret.h"
 #include "memory.h"
 
@@ -13,11 +12,7 @@ int main(void) {
 		exit(0);
     }
 	
-	int st = init();
-
-	if (st) {
-		exit(0);
-	}
+	memInit();
 	
 	int max_length = 10;
 	char line[max_length];
