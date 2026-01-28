@@ -57,11 +57,12 @@ int main(void) {
 
 	freeAll();
 	memFree(); // cleanup function
-        return 0;
+    return 0;
 
 // the errors
 
 }
+
 
 
 
