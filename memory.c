@@ -29,7 +29,11 @@ static void error(const char *msg) {
 /* Allocate a new free segment node. Returns NULL on failure */
 static FreeSeg *newSeg(int start, int len) {
 	FreeSeg *s = (FreeSeg *)malloc(sizeof(FreeSeg));
-	if (!s) return NULL;
+
+	if (!s) {
+		return NULL;
+	}
+
 	s->start = start;
 	s->len = len;
 	s->next = NULL;
@@ -97,12 +101,12 @@ static void combine(FreeSeg *head) {
 	}
 }
 
-/* Validate an index i within memory */
+/* Validate index i within memory */
 static int addrOK(int addr) {
 	return addr >= 0 && addr < MEM_CELLS;
 }
 
-/* Validate index within allocated block */
+/* Validate index addr within allocated block */
 static int isAllocated(int addr) {
 	if (m == NULL) {
 		return 0;
@@ -147,7 +151,7 @@ int memInit(void) {
 	return MEM_OK;
 }
 
-// Free all free-list nodes
+/* Free all free-list nodes */
 void memFree(void) {
 	if (m == NULL) {
 		return;
@@ -246,7 +250,7 @@ int memFreeBlock(int start, int len) {
 		error("Wrong Memory Access.");
 	}
 
-	// ensure entire block is allocated
+	// Ensure entire block is allocated
 	for (int i = 0; i< len; i++) {
 		if (!isAllocated(start + i)) {
 			error("Wrong Memory Access.");
@@ -271,11 +275,12 @@ int memRead(int i, int *outValue) {
 		error("Wrong Memory Access.");
 	}
 
-	// Ensure access within allocated block
+	// Ensure access within memory
 	if (!addrOK(i)) {
 		error("Wrong Memory Access.");
 	}
 
+	// Ensure access within block
 	if (!isAllocated(i)) {
 		error("Wrong Memory Access.");
 	}

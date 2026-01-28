@@ -18,8 +18,9 @@
  *  - Safe read, write, increase, and decrease
  *
  * Ownership:
- *  - Memory *m is owned and allocated by the caller
- *  - Internal allocator data must be released by memFree
+ *  - This module owns an internal static Memory instance
+ *  - memInit() allocates and initializes it
+ *  - memFree() releases internal allocator data and Memory instance
  */
 
 
@@ -29,17 +30,17 @@
  * @post: all MEM_CELLS are set to 0. After this call, 
  *        allocations and accesses are valid.
  *
- * @return MEM_OK on success
- * 	   MEM_ERR_NULL if memory is previously initialised
- * 	   MEM_ERR_NOSPACE if allocation fails
+ * @return If called when already initialized, this implementation
+ * 	   returns MEM_OK and leaves existing memory unchanged.
+ * 	   If allocation fails, module prints error and exits.
  */
 int memInit(void);
 
 /*
- * @brief Free all memory associated with Memory object
+    * @brief Free all memory associated with the module-owned Memory instance.
  *
- * @pre: memory is initialised
- * @post All memory owned is released
+ * @pre memory is initialised
+ * @post All module-owned memory is released and the module becomes uninitialized.
  */
 void memFree(void);
 
@@ -48,16 +49,15 @@ void memFree(void);
  *
  * Corresponds to the mini-language command: Mal x n
  *
- * @pre: outStart is not NULL, n => 0
+ * @pre: outStart is not NULL, n > 0
+ *
  * @post: 
  *        On sucess:
  *          - Writes start index of allocated block into *outStart
  *          - Allocated cells are initialised to 0
  *          - Internal free-space tracking is updated
  *        On failure:
- *          - MEM_ERR_NULL  outstart is NULL
- *          - MEM_ERR_OOB   if n is invalid
- *          - MEM_ERR_NOSPACE  if no suitable block exists
+ *          - Prints error message and exits
  */
 int memAlloc(int n, int *outStart);
 
@@ -76,10 +76,8 @@ int memAlloc(int n, int *outStart);
  *  - Region becomes available for future allocations
  *  - Internal free-space tracking is updated
  *
- * @return:
- *  - MEM_OK on success
- *  - MEM_ERR_NULL if memory is not initlaised
- *  - MEM_ERR_OOB if start is invalid
+ * @return MEM_OK on success
+ * @note Prints error message on double free
  */
 int memFreeBlock(int start, int len);
 
@@ -95,9 +93,10 @@ int memFreeBlock(int start, int len);
  *   
  * @return:
  *  - MEM_OK on success
- *  - MEM_ERR_NULL if outValue is NULL
- *  - MEM_ERR_OOB if access is out of bounds
- *  - MEM_ERR_FREE if index is not inside allocated block
+ *
+ * @note If memory is uninitialized, outValue is NULL, the address is
+ *       out of bounds, or the address is not allocated, prints
+ *       error message and exits.
  */
 int memRead(int i, int *outValue);
 
@@ -109,9 +108,10 @@ int memRead(int i, int *outValue);
  *
  * @return:
  *  - MEM_OK on success
- *  - MEM_ERR_NULL if memory is not innitialised
- *  - MEM_ERR_OOB if access is out of bounds
- *  - MEM_ERR_FREE if index is not inside allocated block
+ *
+ * @note If memory is uninitialized, the address is out of bounds, or the
+ *       address is not allocated, the module prints an error message to stderr
+ *       and exits.
  */
 int memWrite(int i, int value);
 
@@ -124,9 +124,10 @@ int memWrite(int i, int value);
  *
  * @return:
  *  - MEM_OK on success
- *  - MEM_ERR_NULL if m is not initialised
- *  - MEM_ERR_OOB if access is out of bounds
- *  - MEM_ERR_FREE if index is not inside allocated block
+ * 
+ * @note If memory is uninitialized, the address is out of bounds, or the
+ *       address is not allocated, the module prints an error message to stderr
+ *       and exits.
  */
 int memInc(int i);
 
@@ -139,9 +140,10 @@ int memInc(int i);
  *
  * @return:
  *  - MEM_OK on success
- *  - MEM_ERR_NULL if m is not initialised
- *  - MEM_ERR_OOB if access is out of bounds
- *  - MEM_ERR_FREE if index is not inside allocated block
+ * 
+ * @note If memory is uninitialized, the address is out of bounds, or the
+ *       address is not allocated, the module prints an error message to stderr
+ *       and exits.
  */
 int memDec(int i);
 
