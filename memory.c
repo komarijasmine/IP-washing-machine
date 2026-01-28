@@ -124,7 +124,7 @@ int memInit(Memory **pm) {
 
 	// One free segment covering the whole memory
 	m->free_list = newSeg(0, MEM_CELLS);
-	if (m->free:list == NULL) {
+	if (m->free_list == NULL) {
 		return MEM_ERR_NOSPACE;
 	}
 	return MEM_OK;
@@ -218,7 +218,7 @@ int memFreeBlock(Memory *m, int start) {
 		return MEM_ERR_NULL;
 	}
 
-	if (!addrOk(start)) {
+	if (!addrOK(start)) {
 	       	return MEM_ERR_OOB;
 	}
 

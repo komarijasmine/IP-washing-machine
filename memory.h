@@ -46,9 +46,11 @@ int *memCells(Memory *m);
  *        allocations and accesses are valid.
  *        *pm points to a valid initialized Memory object
  *
- * @return MEM_OK on success, error code otherwise
+ * @return MEM_OK on success
+ * 	   MEM_ERR_NULL if pm is NULL
+ * 	   MEM_ERR_NOSPACE if allocation fails
  */
-void memInit(Memory *m);
+int memInit(Memory **pm);
 
 /*
  * @brief Free all memory associated with a Memory object
@@ -67,13 +69,13 @@ void memFree(Memory *m);
  * @pre: m and outStart are not NULL, n > 0
  * @post: 
  *        On sucess:
- *          - Returns 1
  *          - Writes start index of allocated block into *outStart
  *          - Allocated cells are initialised to 0
  *          - Internal free-space tracking is updated
  *        On failure:
- *          - Returns 0
- *          - Interpreter should call an exception ("Not enough memory") 
+ *          - MEM_ERR_NULL  if m or outstart is NULL
+ *          - MEM_ERR_OOB   if n is invalid
+ *          - MEM_ERR_NOSPACE  if no suitable block exists
  */
 int memAlloc(Memory *m, int n, int *outStart);
 
@@ -89,11 +91,17 @@ int memAlloc(Memory *m, int n, int *outStart);
  *  - start + len <= MEM_CELLS
  *  - (start, len) is a currently allocated block
  *  - No double or partial frees
+ *
  * @post:
  *  - Region becomes available for future allocations
  *  - Internal free-space tracking is updated
+ *
+ * @return:
+ *  - MEM_OK on success
+ *  - MEM_ERR_NULL if m is NULL
+ *  - MEM_ERR_OOB if start is invalid
  */
-void memFreeBlock(Memory *m, int start, int len);
+int memFreeBlock(Memory *m, int start);
 
 /*
  * @brief Safe read from an allocated block
@@ -103,42 +111,46 @@ void memFreeBlock(Memory *m, int start, int len);
  *  - outvalue is not NULL
  *  - len > 0
  *  - (start, len) refers to an allocated block
- * 
- * @post:
- *  - returns 1 on success and writes the value to *outValue
- *  - returns 0 on failure
+ *   
+ * @return:
+ *  - MEM_OK on success
+ *  - MEM_ERR_NULL if m or outValue is NULL
+ *  - MEM_ERR_OOB if access is out of bounds
  */
-int memRead(const Memory *m, int start, int len, int i, int *outValue);
+int memRead(const Memory *m, int start, int i, int *outValue);
 
 /*
  * @brief Safe write into an allocated block
  *
- * @post:
- *  - Returns 1 on success
- *  - Returns 0 on failure
+ * @return:
+ *  - MEM_OK on success
+ *  - MEM_ERR_NULL if m is NULL
+ *  - MEM_ERR_OOB if access is out of bounds
  */
-int memWrite(Memory *m, int start, int len, int i, int value);
+int memWrite(Memory *m, int start, int i, int value);
 
 /*
  * @brief Safe increment of a cell within an allocated block
  * 
  * Corresponds to the mini-language command Inc x n
  *
- * @post:
- *   - Returns 1 on success
- *   - Returns 0 on failure
+ * @return:
+ *  - MEM_OK on success
+ *  - MEM_ERR_NULL if m is NULL
+ *  - MEM_ERR_OOB if access is out of bounds
  */
-int memInc(Memory *m, int start, int len, int i);
+int memInc(Memory *m, int start, int i);
 
 /*
  * @brief Safe decrement of a cell within an allocated block
  * 
  * Corresponds to the mini-language command Dec x n
  *
- * @post:
- *   - Returns 1 on success
- *   - Returns 0 on failure
+ * @return:
+ *  - MEM_OK on success
+ *  - MEM_ERR_NULL if m is NULL
+ *  - MEM_ERR_OOB if access is out of bounds
  */
-int memDec(Memory*m, int start, int len, int i);
+int memDec(Memory*m, int start, int i);
 
 #endif
