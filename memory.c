@@ -10,6 +10,7 @@ typedef struct FreeSeg {
     struct FreeSeg *next;   // next segment in ascending start order
 } FreeSeg;
 
+typedef struct Memory Memory;
 static Memory *m = NULL;
 
 /* Memory representation */
@@ -17,14 +18,6 @@ struct Memory {
 	int cells[MEM_CELLS];  // simulated memory cells
 	FreeSeg *free_list;    // free segments linked list, sorted by start
 };
-
-/* returns the array representing memory */
-int *memCells(Memory *m) {
-	if (!m) {
-		return NULL;
-	}
-	return m->cells;
-}
 
 /* Allocate a new free segment node. Returns NULL on failure */
 static FreeSeg *newSeg(int start, int len) {
@@ -102,23 +95,35 @@ static int addrOK(int addr) {
 	return addr >= 0 && addr < MEM_CELLS;
 }
 
-/* Initialize all cells to 0 and allocator to one big free block */
-int memInit(Memory **pm) {
-	if (pm == NULL) {
-		return MEM_ERR_NULL;
+static int isAllocated(int addr) {
+	if(!addrOK(addr)) {
+		return 0;
 	}
 
-	if (*pm == NULL) {
-		*pm = malloc(sizeof(**pm));
-		if (*pm == NULL) {
-			return MEM_ERR_NOSPACE;
+	FreeSeg *cur = m->free_list;
+	while (cur != NULL) {
+		if (addr >= cur->start && addr < cur->start + cur->len) {
+			return 0;
 		}
+		cur = cur->next;
+	}
+	return 1;  // not found in the free list so its allocated
+}
+
+
+
+/* Initialize all cells to 0 and allocator to one big free block */
+int memInit(void) {
+	if (m != NULL) {
+		return MEM_OK;
 	}
 
-	Memory *m = *pm;
+	m = malloc(sizeof(Memory));
+	if (m == NULL) {
+		return MEM_ERR_NOSPACE;
+	}
 
-	// Clear memory contents
-	for (int i = 0; i < MEM_CELLS; i++) {
+	for (int i = 0; i< MEM_CELLS; i++) {
 		m->cells[i] = 0;
 	}
 
@@ -131,7 +136,7 @@ int memInit(Memory **pm) {
 }
 
 // Free all free-list nodes
-void memFree(Memory *m) {
+void memFree(void) {
 	if (m == NULL) {
 		return;
 	}
@@ -144,10 +149,11 @@ void memFree(Memory *m) {
 		cur = next;
 	}
 	free(m);
+	m = NULL;
 }
 
 /* Allocate n cells using a best-fit policy (1 on success, 0 on failure) */
-int memAlloc(Memory *m, int n, int *outStart) {
+int memAlloc(int n, int *outStart) {
 	if (m == NULL || outStart == NULL) {
 		return MEM_ERR_NULL;
 	}
@@ -213,13 +219,16 @@ int memAlloc(Memory *m, int n, int *outStart) {
 }
 
 /* Add a block to the free list and merge adjacent/overlapping segments */
-int memFreeBlock(Memory *m, int start) {
+int memFreeBlock(int start) {
 	if (m == NULL) {
 		return MEM_ERR_NULL;
 	}
 
 	if (!addrOK(start)) {
 	       	return MEM_ERR_OOB;
+	}
+	if (!isAllocated(start)) {
+		return MEM_ERR_FREE;
 	}
 
 	int pos = start;
@@ -247,68 +256,73 @@ int memFreeBlock(Memory *m, int start) {
 }
 
 /* Safe read of block[i] into *outValue */
-int memRead(const Memory *m, int start, int i, int *outValue) {
+int memRead(int i, int *outValue) {
 	if (m == NULL || outValue == NULL) {
 		return MEM_ERR_NULL;
 	}
-	if (i < 0) {
-		return MEM_ERR_OOB;
-	}
-	int addr = start + i;
 
 	// Ensure access within allocated block
-	if (!addrOK(addr)) {
+	if (!addrOK(i)) {
 		return MEM_ERR_OOB;
 	}
-	*outValue = m->cells[addr];
+
+	if (!isAllocated(i)) {
+		return MEM_ERR_FREE;
+	}
+
+	*outValue = m->cells[i];
 	return MEM_OK;
 }
 
 /* Safe write into block[i] */
-int memWrite(Memory *m, int start, int i, int value) {
+int memWrite(int i, int value) {
 	if (m == NULL) {
 		return MEM_ERR_NULL;
 	}
-	if (i < 0) return MEM_ERR_OOB;
-	int addr = start + i;
 
-	if (!addrOK(addr)) {
+	if (!addrOK(i)) {
 		return MEM_ERR_OOB;
 	}
 
-	m->cells[addr] = value;
+	if (!isAllocated(i)) {
+		return MEM_ERR_FREE;
+	}
+
+	m->cells[i] = value;
 	return MEM_OK;
 }
 
 /* Safe increment block[i]++ */
-int memInc(Memory *m, int start, int i) {
+int memInc(int i) {
 	if (m == NULL) {
 		return MEM_ERR_NULL;
 	}
-	if (i < 0) {
-		return MEM_ERR_OOB;
-	}
-	int addr = start + i;
-	if (!addrOK(addr)) {
+	
+	if (!addrOK(i)) {
 		return MEM_ERR_OOB;
 	}
 
-	m->cells[addr] += 1;
+	if (!isAllocated(i)) {
+		return MEM_ERR_FREE;
+	}
+
+	m->cells[i] += 1;
 	return MEM_OK;
 }
 
 /* Safe decrement block[i]-- */
-int memDec(Memory *m, int start, int i) {
+int memDec(int i) {
 	if (m == NULL) {
 		return MEM_ERR_NULL;
 	}
-	if (i < 0) {
+	
+	if (!addrOK(i)) {
 		return MEM_ERR_OOB;
 	}
-	int addr = start + i;
-	if (!addrOK(addr)) {
-		return MEM_ERR_OOB;
+
+	if (!isAllocated(i)) {
+		return MEM_ERR_FREE;
 	}
-	m->cells[addr] -= 1;
+	m->cells[i] -= 1;
 	return MEM_OK;
 }

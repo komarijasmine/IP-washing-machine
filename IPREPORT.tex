@@ -2,7 +2,7 @@
 \usepackage[margin=3cm]{geometry}
 
 \title{Report for Final Project IP Autumn 2026}
-\date{Deadline: 29th Jen.  23:59}
+\date{Deadline: 29th Jan.  23:59}
 
 \author{Alex, Komari, Natalia, and Penelope}
 
@@ -10,32 +10,30 @@
 
 \maketitle
 
-\section*{Task description}
+\section*{Task Description}
 
-Here you should describe the task that the program should solve.
-Write this in your own words, do not just copy the assignment text.
+The project involves developing an interpreter to manage a small programming language that allows for mutation a simple integer array. The programming language includes operations (memory allocation and deallocation, arithmetic/logical operations, and printing) which need to be recognized and executed, while returning runtime errors as specified. The program disposes of limited memory space (100 cells) which needs to be managed efficiently. Finally, the program needs to be subdivided into different modules built on top of each other; each module should be able to treat the functions of the module below as black box. This allows for independent development and testing of each module. 
+
 
 \section*{Structure of the Project}
-
-Create the implementation of a simple programming language that allows for simple mutation of arrays.
-These mutations will happen using commands, formatted as {Function} {paramater1} {paramater2}, 
-where paramater2 is optional, which need to be parsed and interpreted.
-The programming language contains a select amount of functions, which need to be recognized, and executed. 
-The program disposes of a limited amount of memory (for this instance, 100 cells). The implementation
-needs to efficiently manage this memory.
-The program needs to be subdivided into different modules, all of which are built on top of each other.
-That is, the module on top of the previous one, should be able to treat the functions of the module 
-below as black box.
-
+Each module was created based on our task breakdown:
 \begin{itemize}
-    \item Memory: responsible for managing the memory required by the mini-language. It provides functions to allocate and free contiguous memory blocks as well as to read and modify certain cells in memory. 
+    \item main.c: Read the input file given by user and process line by line. Return runtime errors.
+    \item interpreter.c: Parse and interpret each line (3-character command, parameter1 and parameter2) and select operations.
+    \item memory.c: responsible for managing the memory required by the mini-language. It provides functions to allocate and free contiguous memory blocks as well as to read and modify certain cells in memory. 
+    \item variables.c: Store and keep track of variables and their memory locations.
+    \item functions.c: Program operations required for the programming language.
+
 \end{itemize}
+
+To make use of the modularity of Abstract Data Types (ADTs), each module was accompanied by a header file that reveals only the necessary functionalities.
 
 \section*{Data Structures and Implementation Choices}
 
 Explain and justify the implementation choices that you made and the main data structures used in the project.
 \begin{itemize}
     \item Memory: the data structures used are a fixed-size array of 100 integer cells and a linked list to track free memory. Each node of the lost stores the start position and length of a contiguous free block in memory. This implementation was chosen because it allows efficient (de)allocation without scanning the full memory array, while sorted insertion enables easy combination of adjacent free blocks and limits fragmentation.
+    \item Variables: ///
 \end{itemize}
 
 \section*{Testing}
