@@ -20,8 +20,18 @@ int main(void) {
 	char line[256];
 	
 	while (fgets(line, sizeof(line), file))  {
+		
+		// skips an empty line
+		if (line[0] == '\n' || line[0] == '\0') {
+			continue;
+		}
+		
 		int code = interpretLine(&memory, line);
-		if (code != 0) continue; 
+		
+		// skips invalid line (missing parameter, too many parameters, or unknown commands)
+		if (code != 0) {
+			continue; 
+		}
 	}
 	
 	fclose(file);
@@ -30,6 +40,7 @@ int main(void) {
 // the errors
 
 }
+
 
 
 
