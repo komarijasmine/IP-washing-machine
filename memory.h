@@ -50,7 +50,7 @@ int *memCells(Memory *m);
  * 	   MEM_ERR_NULL if pm is NULL
  * 	   MEM_ERR_NOSPACE if allocation fails
  */
-void memInit(Memory **pm);
+int memInit(Memory **pm);
 
 /*
  * @brief Free all memory associated with a Memory object
