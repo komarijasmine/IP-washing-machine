@@ -167,7 +167,7 @@ void memFree(void) {
 /* Allocate n cells using a best-fit policy (1 on success, 0 on failure) */
 int memAlloc(int n, int *outStart) {
 	if (m == NULL || outStart == NULL) {
-		error("Wrong Memory Access.")
+		error("Wrong Memory Access.");
 	}
 	if (n <= 0 || n > MEM_CELLS) {
 		error("Wrong Memory Access.");
