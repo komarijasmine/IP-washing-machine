@@ -166,7 +166,7 @@ int getVals(char *arrayName1, char *arrayName2, int *vals)
 int init(void)
 {
     // Initialize the memory
-    if (memInit())
+    if (!memInit())
     {
         fprintf(stderr, "Initializing memory failed");
         return 1;
