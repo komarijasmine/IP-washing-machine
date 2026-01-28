@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include "functions.h"
 #include "interpret.h"
 #include "memory.h"
 
@@ -11,8 +12,12 @@ int main(void) {
         fprintf(stderr, "Error opening file.\n");
 		exit(0);
     }
+	
+	int st = init();
 
-	memInit();
+	if (st) {
+		exit(0);
+	}
 	
 	int max_length = 10;
 	char line[max_length];
@@ -49,7 +54,12 @@ int main(void) {
 	}
 	
 	fclose(file);
-	memFree();
+
+	freeAll();
+	memFree(); // cleanup function
+        return 0;
+
+// the errors
 
 }
 
