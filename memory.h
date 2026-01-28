@@ -17,38 +17,33 @@
  * with a fixed size of 100 integer cells for the mini-language interpreter. 
  *
  * The module manages the integer array and supports:
- *  - allocation of blocks
- *  - freeing of previously allocated blocks
- *  - safe read, write, increase, and decrease within an allocated block
+ *  - Allocation of blocks
+ *  - Freeing of previously allocated blocks
+ *  - Safe read, write, increase, and decrease
  *
  * Ownership:
  *  - Memory *m is owned and allocated by the caller
  *  - Internal allocator data must be released by memFree
  */
 
+
 /* @brief Initialize the module
  *
- * If *pm is NULL, memory is allocated
- *
- * @param pm Pointer to a Memory pointer
- *
- * @pre: pm is not NULL
+ * @pre: memory is not previously initialised
  * @post: all MEM_CELLS are set to 0. After this call, 
  *        allocations and accesses are valid.
- *        *pm points to a valid initialized Memory object
  *
  * @return MEM_OK on success
- * 	   MEM_ERR_NULL if m is NULL
+ * 	   MEM_ERR_NULL if memory is previously initialised
  * 	   MEM_ERR_NOSPACE if allocation fails
  */
 int memInit(void);
 
 /*
- * @brief Free all memory associated with a Memory object
- * @param m pointer to memory object to destroy
+ * @brief Free all memory associated with Memory object
  *
- * @pre: pm is not NULL
- * @post All memory owned by m is released
+ * @pre: memory is initialised
+ * @post All memory owned is released
  */
 void memFree(void);
 
@@ -75,6 +70,8 @@ int memAlloc(int n, int *outStart);
  *
  * Corresponds to the mini-language command: Fre x
  *
+ * @param:     start:  index in which to start freeing
+ *
  * @pre:
  *  - No double or partial frees
  *
@@ -91,25 +88,33 @@ int memFreeBlock(int start);
 
 /*
  * @brief Safe read from an allocated block
+ *
+ * @param:  i: 	        index in which to read
+ *          outValue:   address to store read value
  * 
  * @pre: 
- *  - m is initialised
+ *  - memory is initialised
  *  - outvalue is not NULL
  *   
  * @return:
  *  - MEM_OK on success
- *  - MEM_ERR_NULL if m or outValue is NULL
+ *  - MEM_ERR_NULL if outValue is NULL
  *  - MEM_ERR_OOB if access is out of bounds
+ *  - MEM_ERR_FREE if index is not inside allocated block
  */
 int memRead(int i, int *outValue);
 
 /*
  * @brief Safe write into an allocated block
  *
+ * @param  i:	     index in which to write
+ *         value:    value to write
+ *
  * @return:
  *  - MEM_OK on success
- *  - MEM_ERR_NULL if m is NULL
+ *  - MEM_ERR_NULL if memory is not innitialised
  *  - MEM_ERR_OOB if access is out of bounds
+ *  - MEM_ERR_FREE if index is not inside allocated block
  */
 int memWrite(int i, int value);
 
@@ -118,10 +123,13 @@ int memWrite(int i, int value);
  * 
  * Corresponds to the mini-language command Inc x n
  *
+ * @param  i:	index in which to increase
+ *
  * @return:
  *  - MEM_OK on success
  *  - MEM_ERR_NULL if m is not initialised
  *  - MEM_ERR_OOB if access is out of bounds
+ *  - MEM_ERR_FREE if index is not inside allocated block
  */
 int memInc(int i);
 
@@ -130,10 +138,13 @@ int memInc(int i);
  * 
  * Corresponds to the mini-language command Dec x n
  *
+ * @param  i:	index in which to decrease
+ *
  * @return:
  *  - MEM_OK on success
  *  - MEM_ERR_NULL if m is not initialised
  *  - MEM_ERR_OOB if access is out of bounds
+ *  - MEM_ERR_FREE if index is not inside allocated block
  */
 int memDec(int i);
 
