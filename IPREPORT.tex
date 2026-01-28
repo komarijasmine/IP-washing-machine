@@ -12,13 +12,14 @@
 
 \section*{Task Description}
 
-The project involves developing an interpreter to manage a small  programming language that can be used by a controller to operate washing machines. The language allows the user to manipulate a simple integer array stored in limited memory space. The programming language includes operations (memory allocation and deallocation, arithmetic/logical operations, and printing) which need to be recognized and executed, while returning runtime errors as specified. The program needs to be subdivided into different modules built on top of each other; each module should be able to treat the functions of the module below as black box. This allows for independent development and testing of each module. 
+The project involves developing an interpreter to manage a small programming language that allows for mutation a simple integer array. The programming language includes operations (memory allocation and deallocation, arithmetic/logical operations, and printing) which need to be recognized and executed, while returning runtime errors as specified. The program disposes of limited memory space (100 cells) which needs to be managed efficiently. Finally, the program needs to be subdivided into different modules built on top of each other; each module should be able to treat the functions of the module below as black box. This allows for independent development and testing of each module. 
+
 
 \section*{Structure of the Project}
 Each module was created based on our task breakdown:
 \begin{itemize}
     \item main.c: Read the input file given by user and process line by line. Return runtime errors.
-    \item interpreter.c: Parse and interpret each line (3-character command, parameter 1 and parameter 2) and select operations.
+    \item interpreter.c: Parse and interpret each line (3-character command, parameter1 and parameter2) and select operations.
     \item memory.c: responsible for managing the memory required by the mini-language. It provides functions to allocate and free contiguous memory blocks as well as to read and modify certain cells in memory. 
     \item variables.c: Store and keep track of variables and their memory locations.
     \item functions.c: Program operations required for the programming language.
