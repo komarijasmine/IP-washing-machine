@@ -16,13 +16,12 @@ The project involves developing an interpreter to manage a small programming lan
 
 
 \section*{Structure of the Project}
-Each module was created based on our task breakdown:
+Each module was created based on a clear task breakdown:
 \begin{itemize}
-    \item main.c: Read the input file given by user and process line by line. Return runtime errors.
+    \item main.c: Read the input file given by user and process line by line. Reports runtime errors.
     \item interpreter.c: Parse and interpret each line (3-character command, parameter1 and parameter2) and select operations.
-    \item memory.c: responsible for managing the memory required by the mini-language. It provides functions to allocate and free contiguous memory blocks as well as to read and modify certain cells in memory. 
-    \item variables.c: Store and keep track of variables and their memory locations.
-    \item functions.c: Program operations required for the programming language.
+    \item memory.c: manages the memory required by the mini-language. It provides functions to allocate and free contiguous memory blocks as well as to read and modify certain cells in memory.
+    \item functions.c: Program operations required for the programming language as well as variable tracking.
 
 \end{itemize}
 
@@ -30,9 +29,8 @@ To make use of the modularity of Abstract Data Types (ADTs), each module was acc
 
 \section*{Data Structures and Implementation Choices}
 
-Explain and justify the implementation choices that you made and the main data structures used in the project.
 \begin{itemize}
-    \item Memory: the data structures used are a fixed-size array of 100 integer cells and a linked list to track free memory. Each node of the lost stores the start position and length of a contiguous free block in memory. This implementation was chosen because it allows efficient (de)allocation without scanning the full memory array, while sorted insertion enables easy combination of adjacent free blocks and limits fragmentation.
+	\item Memory: the data structures used are a fixed-size array of 100 integer cells and a linked list to track free memory. Each node of the list stores the start position and length of a contiguous free block in memory. This design was chosen because to avoid scanning the entire memory array on each (de) allocation. Allocation uses a \emph{best-fit} strategy, selecting smallest free blocks that can satisfy requests. This reduces fragmentation while keeping implementation simple. In the worst case, allocation runs in $O(n)$ where $n$ is the number of free segments. Deallocation reinserts a freed block into the free list in order and deals with overlapping/adjacent segments. To ensure safety, the module prevents access to unallocated memory, checking the free list, which also runs in $O(n)$. The module owns and manages its internal memory state entirely as the internal \texttt{Memory} struct is not exposed in header file, enforcing encapsulation.
     \item Variables: ///
 \end{itemize}
 
