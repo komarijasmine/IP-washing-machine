@@ -4,6 +4,11 @@
 int main(void) {
 	FILE* file = fopen("text.txt", "r");
 	
+	if (file == NULL) {
+        fprintf(stderr, "Error opening file");
+		exit(0);
+    }
+	
 	Memory *memory = NULL;
 	int st = memInit(&memory);
 	if (!st) {
@@ -13,15 +18,17 @@ int main(void) {
 	}
 
 	char line[256];
+	
 	while (fgets(line, sizeof(line), file))  {
-		interpretLine(&memory, line);
-		if (code != 0) {
-
+		int code = interpretLine(&memory, line);
+		if (code != 0) continue; 
 	}
+	
 	fclose(file);
 	memFree(memory);
 
 // the errors
 
 }
+
 
