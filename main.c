@@ -5,7 +5,7 @@ int main(void) {
 	FILE* file = fopen("text.txt", "r");
 	
 	if (file == NULL) {
-        fprintf(stderr, "Error opening file");
+        fprintf(stderr, "Error opening file.\n");
 		exit(0);
     }
 	
@@ -30,5 +30,6 @@ int main(void) {
 // the errors
 
 }
+
 
 
