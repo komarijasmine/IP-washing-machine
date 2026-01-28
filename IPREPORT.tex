@@ -41,14 +41,19 @@ Testing was conducted at multiple levels, following the modular structure of the
 \subsection{Modular testing:}
 \begin{itemize}
 	\item \textbf{Memory:} tested using test programs focused on validating fucntions and safety. These program tested scenarios like access attemps before allocation, detection of out-of-bounds access, detection of access to freed memory, and correct use of free memory amongst others. 
+	\item \textbf{Parser (main.c):} tested using the interpreter.h file, a simple interpreter.c file that prints text to show success, and a text.txt file. These programs tested parsing of valid input as well as invalid input using edge cases (an empty line, a line with too many characters). 
+    
 \end{itemize}
 
 \subsection{Whole program testing:}
+\begin{itemize}
+	\item \textbf{Parsing and Interpreting}: need to test if main.c returns errors given from the interpreter
 
+\end{itemize}
 
 \section*{Self-Reflection}
 
-This project gave us practical experience in designing and implementing a modular design in C and an embedded system,emphasizing abstraction, and robustness. One of the main lessons learned was the importance of defining interfaces between modules. By creating modules and interacting through header files, it became easier to divide the work, understand the task at hand, and test components independently, reducing complexity. 
+This project gave us practical experience in designing and implementing a modular design in C and an embedded system, emphasizing abstraction and robustness. One of the main lessons learned was the importance of defining interfaces between modules. By creating modules and interacting through header files, it became easier to divide the work, understand the task at hand, and test components independently, reducing complexity. 
 
 A key technical insight was related to memory management. Designing the memory from scratched improved our understanding of how dynamic memory allocators work internally. 
 
