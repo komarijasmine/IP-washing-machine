@@ -71,7 +71,7 @@ void memFree(void);
 int memAlloc(int n, int *outStart);
 
 /*
- * @brief Free a previously allocated block
+ * @brief Free a previously allocated block (from free until INT_MAX)
  *
  * Corresponds to the mini-language command: Fre x
  *
