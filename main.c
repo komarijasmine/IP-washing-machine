@@ -40,7 +40,7 @@ int main(void) {
         if (line[0] == '\n' || line[0] == '\0') continue;
 
         // Interpret the valid line
-        interpretLine(line);
+        int code = interpretLine(line);
 		
 		// skips invalid line (missing parameter, too many parameters, or unknown commands)
 		if (code != 0) {
@@ -52,6 +52,7 @@ int main(void) {
 	memFree();
 
 }
+
 
 
 
