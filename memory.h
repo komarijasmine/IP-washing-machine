@@ -9,6 +9,7 @@
 #define MEM_ERR_NULL -1
 #define MEM_ERR_OOB -2
 #define MEM_ERR_NOSPACE -3
+#define MEM_ERR_FREE -4
 
 /**
  * @file memory.h
@@ -25,17 +26,7 @@
  *  - Internal allocator data must be released by memFree
  */
 
-/* Opaque definition of the memory struct. Users only manipulate Memory 
- * objects through the functions bellow */
-typedef struct Memory Memory;
-
-/* @brief Array representing the memory.
- * 
- * @returns pointer to the memory array.
- */
-int *memCells(Memory *m);
-
-/* @brief Initialize and allocate memory object
+/* @brief Initialize the module
  *
  * If *pm is NULL, memory is allocated
  *
@@ -47,10 +38,10 @@ int *memCells(Memory *m);
  *        *pm points to a valid initialized Memory object
  *
  * @return MEM_OK on success
- * 	   MEM_ERR_NULL if pm is NULL
+ * 	   MEM_ERR_NULL if m is NULL
  * 	   MEM_ERR_NOSPACE if allocation fails
  */
-int memInit(Memory **pm);
+int memInit(void);
 
 /*
  * @brief Free all memory associated with a Memory object
@@ -59,25 +50,25 @@ int memInit(Memory **pm);
  * @pre: pm is not NULL
  * @post All memory owned by m is released
  */
-void memFree(Memory *m);
+void memFree(void);
 
 /*
  * @brief Allocates n contiguous cells.
  *
  * Corresponds to the mini-language command: Mal x n
  *
- * @pre: m and outStart are not NULL, n > 0
+ * @pre: outStart is not NULL, n => 0
  * @post: 
  *        On sucess:
  *          - Writes start index of allocated block into *outStart
  *          - Allocated cells are initialised to 0
  *          - Internal free-space tracking is updated
  *        On failure:
- *          - MEM_ERR_NULL  if m or outstart is NULL
+ *          - MEM_ERR_NULL  outstart is NULL
  *          - MEM_ERR_OOB   if n is invalid
  *          - MEM_ERR_NOSPACE  if no suitable block exists
  */
-int memAlloc(Memory *m, int n, int *outStart);
+int memAlloc(int n, int *outStart);
 
 /*
  * @brief Free a previously allocated block
@@ -85,11 +76,6 @@ int memAlloc(Memory *m, int n, int *outStart);
  * Corresponds to the mini-language command: Fre x
  *
  * @pre:
- *  - m is not NULL
- *  - len > 0
- *  - 0 <= start < MEM_CELLS
- *  - start + len <= MEM_CELLS
- *  - (start, len) is a currently allocated block
  *  - No double or partial frees
  *
  * @post:
@@ -98,26 +84,24 @@ int memAlloc(Memory *m, int n, int *outStart);
  *
  * @return:
  *  - MEM_OK on success
- *  - MEM_ERR_NULL if m is NULL
+ *  - MEM_ERR_NULL if memory is not initlaised
  *  - MEM_ERR_OOB if start is invalid
  */
-int memFreeBlock(Memory *m, int start);
+int memFreeBlock(int start);
 
 /*
  * @brief Safe read from an allocated block
  * 
  * @pre: 
- *  - m is not NULL
+ *  - m is initialised
  *  - outvalue is not NULL
- *  - len > 0
- *  - (start, len) refers to an allocated block
  *   
  * @return:
  *  - MEM_OK on success
  *  - MEM_ERR_NULL if m or outValue is NULL
  *  - MEM_ERR_OOB if access is out of bounds
  */
-int memRead(const Memory *m, int start, int i, int *outValue);
+int memRead(int i, int *outValue);
 
 /*
  * @brief Safe write into an allocated block
@@ -127,7 +111,7 @@ int memRead(const Memory *m, int start, int i, int *outValue);
  *  - MEM_ERR_NULL if m is NULL
  *  - MEM_ERR_OOB if access is out of bounds
  */
-int memWrite(Memory *m, int start, int i, int value);
+int memWrite(int i, int value);
 
 /*
  * @brief Safe increment of a cell within an allocated block
@@ -136,10 +120,10 @@ int memWrite(Memory *m, int start, int i, int value);
  *
  * @return:
  *  - MEM_OK on success
- *  - MEM_ERR_NULL if m is NULL
+ *  - MEM_ERR_NULL if m is not initialised
  *  - MEM_ERR_OOB if access is out of bounds
  */
-int memInc(Memory *m, int start, int i);
+int memInc(int i);
 
 /*
  * @brief Safe decrement of a cell within an allocated block
@@ -148,9 +132,9 @@ int memInc(Memory *m, int start, int i);
  *
  * @return:
  *  - MEM_OK on success
- *  - MEM_ERR_NULL if m is NULL
+ *  - MEM_ERR_NULL if m is not initialised
  *  - MEM_ERR_OOB if access is out of bounds
  */
-int memDec(Memory*m, int start, int i);
+int memDec(int i);
 
 #endif
