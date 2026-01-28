@@ -4,8 +4,8 @@
 #include "functions.h"
 #include "memory.h"
 
-<<<<<<< HEAD
-// Custom list data type that stores the identifier of an array (_arrayName_), the length of the array (_length_), and it's address in memory (_address_)
+/* Custom list data type that stores the identifier of an array (_arrayName_), 
+the length of the array (_length_), and it's address in memory (_address_) */
 typedef struct
 {
     char arrayName;
@@ -14,7 +14,7 @@ typedef struct
     Array *next;
 } Array;
 
-// Creates static head to list with array identifiers
+// Creates static HEAD to list with array identifiers
 static Array *arrays = NULL;
 
 Array *checkArray(char arrayName);
@@ -26,7 +26,7 @@ Array *checkArray(char arrayName)
 {
     /* Local function 
     EFFECT: Checks whether an array with identifier _arrayName_ exists
-    OUTPUT: The array of which the member .arrayName is equal to _arrayName_; NULL if no array with identifier _arrayName_ exists */
+    OUTPUT: The array of which the member .arrayName is equal to _arrayName_; NULL if no array with the identifier _arrayName_ exists */
 
     if (arrays)
     {
@@ -42,6 +42,7 @@ Array *checkArray(char arrayName)
         }
     }
 
+    fprintf(stderr, "No array with identifier %c exist", arrayName);
     return NULL;
 }
 
@@ -62,9 +63,11 @@ int fetchAdress(char arrayName, int index)
             return array->address + index;
         }
 
+        fprintf(stderr, "Index %d is outside of the range of the array with the identifier %c", index, arrayName);
         return -2;
     }
-    
+
+    fprintf(stderr, "No array with identifier %c exist", arrayName); 
     return -1;
 }
 
@@ -106,6 +109,7 @@ int freeArrayName(char arrayName)
         }
     }
 
+    fprintf(stderr, "No array with identifier %c exists", arrayName); 
     return -1;
 }
 
@@ -118,7 +122,8 @@ int *getVals(char arrayName1, char arrayName2, int *vals)
     vals[1] is the memory adress of the array with the identifier _arrayName2_,
     vals[2] is the value of the first element of the array with the identifier _arrayName1_,
     and vals[3] is the value of the first element of the array with the identifier _arrayName2_
-    OUTPUT: 0 upon success; 1 if fetching the memory address of the array with the identifier _arrayName1_ failed; 
+    OUTPUT: 0 upon successful execution of the function; 
+    1 if fetching the memory address of the array with the identifier _arrayName1_ failed; 
     2 if fetching the memory address of the array with the identifier _arrayName2_ failed;
     3 if reading the memory cell of the first element of the array with the identifier _arrayName1_ failed,
     4 if reading the memory cell of the first element of the array with the identifier _arrayName1_ failed  */
@@ -126,139 +131,46 @@ int *getVals(char arrayName1, char arrayName2, int *vals)
     vals[0] = fetchAdress(arrayName1, 0);
     if (vals[0] < 0)
     {
+        fprintf(stderr, "Fetching the memory adress of the array with identifier %c failed", arrayName1); 
         return 1;
     }
 
     vals[1] = fetchAdress(arrayName2, 0);
     if (vals[1] < 0)
     {
+        fprintf(stderr, "Fetching the memory adress of the array with identifier %c failed", arrayName1);
         return 2;
     }
 
     if (memRead(vals[0], &vals[2]))
     {
+        fprintf(stderr, "Reading the memory cell of the array with identifier %c with the adress %d failed", arrayName1, vals[0]);
         return 3;
     }
 
     if (memRead(vals[1], &vals[3]))
     {
+        fprintf(stderr, "Reading the memory cell of the array with identifier %c with the adress %d failed", arrayName2, vals[1]);
         return 4;
     }
 
-=======
-#define CR sizeof(int) / sizeof(char)
-
-int checkArrayName(Memory *m, char arrayName)
-{
-    // Local function. Check whether array name already exists. If so, returns adress (index in memory) of array, otherwise returns -1.
-
-    int i = 0;
-    unsigned char *cell_values = (unsigned char *) m->cells;
-    unsigned char cell_value = cell_values[MEM_CELLS * CR - 1];
-
-    while (cell_value != CHAR_MAX)
-    {
-        if (cell_value == arrayName)
-        {
-            return (int) cell_values[MEM_CELLS * CR - 2 - i];
-        }
-
-        i += 2;
-        cell_value = cell_values[MEM_CELLS * CR - 1 - i];
-    }
-
-    return -1;
-}
-
-
-int checkArray(Memory *m, char arrayName, int index)
-{
-    // Local function. Check whether array and index exists. If so, returns adress (index in memory) of array, otherwise returns negative value.
-
-    int array = checkArrayName(m, arrayName);
-    if (array < 0)
-    {
-        return -1;
-    }
-
-    // Check whether list terminates before index
-    for (int i = 0; i <= index; i++)
-    {
-        if (m->cells[array + i] == INT_MAX)
-        {
-            return -2;
-        }
-    }
-
-    return array;
-}
-
-
-Memory *initializeMemory(void) {
-    Memory *m;
-    memInit(m);
-
-    if (!m)
-    {
-        return 1;
-    }
-
-    return 0;
-}
-
-int assign(Memory *m, char arrayName, int value)
-{
-    int array = checkArrayName(m, arrayName);
-    if (array < 0)
-    {
-        return 1;
-    }
-
-    m->cells[array] = value;
     return 0;
 }
 
 
-int increase(Memory *m, char arrayName, int index)
-{
-    int array = checkArray(m, arrayName, index);
-    if (array < 0)
-    {
-        return 1;
-    }
-    
-    m->cells[array + index]++;
->>>>>>> 9679122515220888bf85d4da35d0e118fb874400
-    return 0;
-}
-
-
-<<<<<<< HEAD
 int init(void)
 {
     // Initialize the memory
     if (memInit())
     {
-        // Initialization failed
+        fprintf(stderr, "Initializing memory failed");
         return 1;
     }
 
-=======
-int decrease(Memory *m, char arrayName, int index)
-{
-    int array = checkArray(m, arrayName, index);
-    if (array < 0)
-    {
-        return 1;
-    }
-    
-    m->cells[array + index]--;
->>>>>>> 9679122515220888bf85d4da35d0e118fb874400
     return 0;
 }
 
 
-<<<<<<< HEAD
 int freeAll(void)
 {
     while (arrays)
@@ -266,179 +178,27 @@ int freeAll(void)
         // Frees the first element of _arrays_. _arrays_ points to the next element after removal
         if (freeArray(arrays->arrayName))
         {
-            // Freeing failed
+            fprintf(stderr, "Freeing array failed");
             return 1;
         }
     }
 
-=======
-int allocate(Memory *m, char arrayName, int size)
-{
-    int i = 0;
-    unsigned char *cell_values = (unsigned char *) m->cells;
-    unsigned char cell_value = cell_values[MEM_CELLS * CR - 1];
-
-    while (cell_value != CHAR_MAX)
-    {
-        // Check whether array name already exists
-        if (cell_value == arrayName)
-        {
-            return 1;
-        }
-
-        i += 2;
-        cell_value = cell_values[MEM_CELLS * CR - 1 - i];
-    }
-
-    // Allocate array of size + 1 (extra space for array terminator)
-    int index = memAlloc(m, size + 1);
-    if (index < 0)
-    {
-        return 2;
-    }
-
-    // Create variable-pointer pair at end of memory
-    cell_values[MEM_CELLS * CR - 1 - i] = arrayName;
-    cell_values[MEM_CELLS * CR - 2 - i] = (unsigned char) index;
-    cell_values[MEM_CELLS * CR - 3 - i] = CHAR_MAX;
-
-    // Add array terminator
-    m->cells[size] = INT_MAX;
-
->>>>>>> 9679122515220888bf85d4da35d0e118fb874400
     return 0;
 }
 
 
-<<<<<<< HEAD
 int assign(char arrayName, int value)
 {
     int address = fetchAdress(arrayName, 0);
     if (address < 0)
-=======
-int printCell(Memory *m, char arrayName, int index)
-{
-    int array = checkArray(m, arrayName, index);
-    if (array < 0)
->>>>>>> 9679122515220888bf85d4da35d0e118fb874400
     {
+        fprintf(stderr, "Fetching adress of the array with identifier %c failed", arrayName);       
         return 1;
     }
 
-<<<<<<< HEAD
     if (!memWrite(address, value))
-=======
-    printf("%d\n", m->cells[array + index]);
-    return 0;
-}
-
-
-int add(Memory *m, char arrayName1, char arrayName2)
-{
-    int array1 = checkArrayName(m, arrayName1);
-    if (array1 < 0)
     {
-        return 1;
-    }
-
-    int array2 = checkArrayName(m, arrayName2);
-    if (array2 < 0)
-    {
-        return 1;
-    }
-
-    m->cells[array1] += m->cells[array2];
-    return 0;
-}
-
-
-int subtract(Memory *m, char arrayName1, char arrayName2)
-{
-    int array1 = checkArrayName(m, arrayName1);
-    if (array1 < 0)
-    {
-        return 1;
-    }
-
-    int array2 = checkArrayName(m, arrayName2);
-    if (array2 < 0)
-    {
-        return 1;
-    }
-
-    m->cells[array1] -= m->cells[array2];
-    return 0;
-}
-
-
-int multiply(Memory *m, char arrayName1, char arrayName2)
-{
-    int array1 = checkArrayName(m, arrayName1);
-    if (array1 < 0)
-    {
-        return 1;
-    }
-
-    int array2 = checkArrayName(m, arrayName2);
-    if (array2 < 0)
-    {
-        return 1;
-    }
-
-    m->cells[array1] *= m->cells[array2];
-    return 0;
-}
-
-
-int andCells(Memory *m, char arrayName1, char arrayName2)
-{
-    int array1 = checkArrayName(m, arrayName1);
-    if (array1 < 0)
-    {
-        return 1;
-    }
-
-    int array2 = checkArrayName(m, arrayName2);
-    if (array2 < 0)
-    {
-        return 1;
-    }
-
-    m->cells[array1] = (m->cells[array1] * m->cells[array2]) % 2;
-    return 0;
-}
-
-
-int xorCells(Memory *m, char arrayName1, char arrayName2)
-{
-    int array1 = checkArrayName(m, arrayName1);
-    if (array1 < 0)
-    {
-        return 1;
-    }
-
-    int array2 = checkArrayName(m, arrayName2);
-    if (array2 < 0)
-    {
-        return 1;
-    }
-
-    m->cells[array1] = (m->cells[array1] + m->cells[array2]) % 2;
-    return 0;
-}
-
-
-int freeArray(Memory *m, char arrayName)
-{
-    int array = checkArrayName(m, arrayName);
-    if (array < 0)
-    {
-        return 1;
-    }
-
-    if (!memFreeBlock(m, arrayName))
->>>>>>> 9679122515220888bf85d4da35d0e118fb874400
-    {
+        fprintf(stderr, "Writing to address %d of the array with identifier %c failed", address, arrayName);     
         return 2;
     }
 
@@ -446,24 +206,18 @@ int freeArray(Memory *m, char arrayName)
 }
 
 
-<<<<<<< HEAD
 int increase(char arrayName, int index)
 {
     int address = fetchAdress(arrayName, 0);
     if (address < 0)
-=======
-int printArray(Memory *m, char arrayName)
-{
-    int array = checkArrayName(m, arrayName);
-    if (array < 0)
->>>>>>> 9679122515220888bf85d4da35d0e118fb874400
     {
+        fprintf(stderr, "Fetching adress of the array with identifier %c failed", arrayName);     
         return 1;
     }
 
-<<<<<<< HEAD
     if (memInc(address))
     {
+        fprintf(stderr, "Increasing the value of the address %d of the array with identifier %c failed", address, arrayName);    
         return 2;
     }
 
@@ -476,11 +230,13 @@ int decrease(char arrayName, int index)
     int address = fetchAdress(arrayName, 0);
     if (address < 0)
     {
+        fprintf(stderr, "Fetching adress of the array with identifier %c failed", arrayName);  
         return 1;
     }
 
     if (memDec(address))
     {
+        fprintf(stderr, "Decreasing the value of the address %d of the array with identifier %c failed", address, arrayName);    
         return 2;
     }
 
@@ -490,9 +246,11 @@ int decrease(char arrayName, int index)
 
 int allocate(char arrayName, int length)
 {
+    // Store _arrayName_ and its length _length_ and its adress in memory in the same element
     Array *newElement = malloc(sizeof(Array));
     if (!newElement)
     {
+        fprintf(stderr, "Creating a new element to store array identifier %c failed", arrayName);
         return 1;
     }
 
@@ -500,18 +258,22 @@ int allocate(char arrayName, int length)
     newElement->length = length;
     newElement->next = NULL;
 
-    if (memAlloc(length, &(newElement->length)))
+    // Allocate space in memory for array and store its address
+    if (memAlloc(length, &(newElement->address)))
     {
         free(newElement);
+        fprintf(stderr, "Allocating memory for the array with identifier %c failed", arrayName);
         return 2;
     }
 
+    // Set HEAD to _newElement_ as currently no other arrays
     if (!arrays)
     {
         arrays = newElement;
         return 0;
     }
 
+    // Add _newElement_ to the end of the list with array identifiers
     Array *element = arrays;
     while (element->next)
     {
@@ -528,13 +290,15 @@ int printCell(char arrayName, int index)
     int address = fetchAdress(arrayName, 0);
     if (address < 0)
     {
+        fprintf(stderr, "Fetching adress of the array with identifier %c failed", arrayName);    
         return 1;
     }
 
     int *val;
     if (!memRead(address, val))
     {
-        return 1;
+        fprintf(stderr, "Reading the address %d of the array with identifier %c failed", address, arrayName);
+        return 2;
     }
 
     printf("%d\n", *val);
@@ -553,6 +317,7 @@ int add(char arrayName1, char arrayName2)
 
     if (memWrite(vals[0], vals[2] + vals[3]))
     {
+        fprintf("Writing to adress %d of the array with identifier %c failed", vals[0], arrayName1);
         return 2;
     }
 
@@ -570,6 +335,7 @@ int subtract(char arrayName1, char arrayName2)
 
     if (memWrite(vals[0], vals[2] - vals[3]))
     {
+        fprintf("Writing to adress %d of the array with identifier %c failed", vals[0], arrayName1);
         return 2;
     }
 
@@ -587,6 +353,7 @@ int multiply(char arrayName1, char arrayName2)
 
     if (memWrite(vals[0], vals[2] * vals[3]))
     {
+        fprintf("Writing to adress %d of the array with identifier %c failed", vals[0], arrayName1);
         return 2;
     }
 
@@ -604,6 +371,7 @@ int andCells(char arrayName1, char arrayName2)
 
     if (memWrite(vals[0], (vals[2] * vals[3]) % 2))
     {
+        fprintf("Writing to adress %d of the array with identifier %c failed", vals[0], arrayName1);
         return 2;
     }
 
@@ -621,6 +389,7 @@ int xorCells(char arrayName1, char arrayName2)
 
     if (memWrite(vals[0], (vals[2] + vals[3]) % 2))
     {
+        fprintf("Writing to adress %d of the array with identifier %c failed", vals[0], arrayName1);
         return 2;
     }
 
@@ -633,11 +402,13 @@ int freeArray(char arrayName)
     int address = freeArrayName(arrayName);
     if (address < 0)
     {
+        fprintf(stderr, "Freeing array with identifier %c failed", arrayName);
         return 1;
     }
 
     if (memFreeBlock(address))
     {
+        fprintf(stderr, "Freeing memory of array with identifier %c failed", arrayName);
         return 2;
     }
 
@@ -659,6 +430,7 @@ int printArray(char arrayName)
         int *val;
         if (memRead(array->address + i, val))
         {
+            fprintf(stderr, "Reading the address %d of the array with identifier %c failed", array->address + i, arrayName);
             return 2;
         }
 
@@ -666,19 +438,6 @@ int printArray(char arrayName)
     }
     printf("]\n");
     
-=======
-    int i = 0;
-    int cell_value = m->cells[array];
-
-    printf("[ ");
-    while (cell_value != INT_MAX)
-    {
-        printf("%d ", cell_value);
-        cell_value = m->cells[array + ++i];
-    }
-    printf("]\n");
-
->>>>>>> 9679122515220888bf85d4da35d0e118fb874400
     return 0;
 }
 
