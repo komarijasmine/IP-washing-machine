@@ -10,6 +10,8 @@ typedef struct FreeSeg {
     struct FreeSeg *next;   // next segment in ascending start order
 } FreeSeg;
 
+static Memory *m = NULL;
+
 /* Memory representation */
 struct Memory {
 	int cells[MEM_CELLS];  // simulated memory cells

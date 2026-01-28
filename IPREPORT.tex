@@ -17,7 +17,15 @@ Write this in your own words, do not just copy the assignment text.
 
 \section*{Structure of the Project}
 
-Explain and justify how you modularised your code.
+Create the implementation of a simple programming language that allows for simple mutation of arrays.
+These mutations will happen using commands, formatted as {Function} {paramater1} {paramater2}, 
+where paramater2 is optional, which need to be parsed and interpreted.
+The programming language contains a select amount of functions, which need to be recognized, and executed. 
+The program disposes of a limited amount of memory (for this instance, 100 cells). The implementation
+needs to efficiently manage this memory.
+The program needs to be subdivided into different modules, all of which are built on top of each other.
+That is, the module on top of the previous one, should be able to treat the functions of the module 
+below as black box.
 
 \begin{itemize}
     \item Memory: responsible for managing the memory required by the mini-language. It provides functions to allocate and free contiguous memory blocks as well as to read and modify certain cells in memory. 
