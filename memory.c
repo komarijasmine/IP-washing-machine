@@ -219,29 +219,27 @@ int memAlloc(int n, int *outStart) {
 }
 
 /* Add a block to the free list and merge adjacent/overlapping segments */
-int memFreeBlock(int start) {
+int memFreeBlock(int start, int len) {
 	if (m == NULL) {
 		return MEM_ERR_NULL;
 	}
-
-	if (!addrOK(start)) {
+	if (len <= 0) {
+		return MEM_ERR_OOB;
+	}
+	if (!addrOK(start) || !addrOK(start + len - 1)) {
 	       	return MEM_ERR_OOB;
 	}
+
 	if (!isAllocated(start)) {
 		return MEM_ERR_FREE;
 	}
 
-	int pos = start;
-
-	while (pos < MEM_CELLS && m->cells[pos] != INT_MAX) {
-		pos++;
+	// ensure entire block is allocated
+	for (int i = 0; i< len; i++) {
+		if (!isAllocated(start + i)) {
+			return MEM_ERR_FREE;
+		}
 	}
-
-	if (pos >= MEM_CELLS) {
-		return MEM_ERR_OOB;
-	}
-
-	int len = (pos - start) + 1;
 
 	// Create a new free segment node for the block
 	FreeSeg *seg = newSeg(start, len);

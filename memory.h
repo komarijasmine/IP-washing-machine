@@ -66,11 +66,12 @@ void memFree(void);
 int memAlloc(int n, int *outStart);
 
 /*
- * @brief Free a previously allocated block (from free until INT_MAX)
+ * @brief Free a previously allocated block
  *
  * Corresponds to the mini-language command: Fre x
  *
  * @param:     start:  index in which to start freeing
+ * 	       len:    size of the block to free
  *
  * @pre:
  *  - No double or partial frees
@@ -84,7 +85,7 @@ int memAlloc(int n, int *outStart);
  *  - MEM_ERR_NULL if memory is not initlaised
  *  - MEM_ERR_OOB if start is invalid
  */
-int memFreeBlock(int start);
+int memFreeBlock(int start, int len);
 
 /*
  * @brief Safe read from an allocated block
