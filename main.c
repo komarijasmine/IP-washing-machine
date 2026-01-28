@@ -10,13 +10,7 @@ int main(void) {
 		exit(0);
     }
 	
-	Memory *memory = NULL;
-	int st = memInit(&memory);
-	if (!st) {
-		fprintf(stderr, "Not enough memory.\n");
-		fclose(file);
-		exit(0);
-	}
+	memInit();
 
 	int flush = 1;
 	int max_length = 10;
@@ -50,7 +44,7 @@ int main(void) {
 			continue;
 		}
 		
-		int code = interpretLine(&memory, line);
+		int code = interpretLine(line);
 		
 		// skips invalid line (missing parameter, too many parameters, or unknown commands)
 		if (code != 0) {
@@ -59,7 +53,7 @@ int main(void) {
 	}
 	
 	fclose(file);
-	memFree(memory); // cleanup function
+	memFree(); // cleanup function
 
 // the errors
 
