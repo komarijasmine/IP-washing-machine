@@ -10,6 +10,7 @@ typedef struct FreeSeg {
     struct FreeSeg *next;   // next segment in ascending start order
 } FreeSeg;
 
+typedef struct Memory Memory;
 static Memory *m = NULL;
 
 /* Memory representation */
@@ -101,7 +102,7 @@ static int isAllocated(int addr) {
 
 	FreeSeg *cur = m->free_list;
 	while (cur != NULL) {
-		if (addr >= cur->start && cur->start + cur->len) {
+		if (addr >= cur->start && addr < cur->start + cur->len) {
 			return 0;
 		}
 		cur = cur->next;
