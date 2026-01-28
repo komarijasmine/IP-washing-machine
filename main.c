@@ -1,6 +1,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include "interpret.h"
+#include "memory.h"
 
 int main(void) {
 	FILE* file = fopen("text.txt", "r");
@@ -9,42 +11,36 @@ int main(void) {
         fprintf(stderr, "Error opening file.\n");
 		exit(0);
     }
-	
-	memInit();
 
-	int flush = 1;
+	memInit();
+	
 	int max_length = 10;
 	char line[max_length];
 	
-	while (fgets(line, sizeof(line), file))  {
-		for (int i = 0; i < max_length; i++) {
-			if (line[i] == '\n') {
-				flush = 0;
-				break;
-			}
-		}
+	while (fgets(line, sizeof(line), file)) {
+        int flush = 0; 
+        
+        if (strchr(line, '\n') == NULL && !feof(file)) {
+            flush = 1;
+        }
 
-		if (flush) {
-			char c;
-			while (1)
-			{
-				c = fgets(c, sizeof(c), file);
-				if (c == '\n') {
-					break;
-				}
-				else if (c != ' ') {
-					// cleanup function
-					return 2;
-				}
-			}
-		}
-		
-		// skips an empty line
-		if (line[0] == '\n' || line[0] == '\0') {
-			continue;
-		}
-		
-		int code = interpretLine(line);
+        if (flush) {
+            int c;
+            while ((c = fgetc(file)) != '\n' && c != EOF) {
+            }
+            // line is too long, discards and moves on to the next line.
+            continue;
+        }
+
+        // Remove newline for the interpreter
+        char *nl = strchr(line, '\n');
+        if (nl) *nl = '\0';
+
+        // Skip empty lines
+        if (line[0] == '\n' || line[0] == '\0') continue;
+
+        // Interpret the valid line
+        interpretLine(line);
 		
 		// skips invalid line (missing parameter, too many parameters, or unknown commands)
 		if (code != 0) {
@@ -53,9 +49,7 @@ int main(void) {
 	}
 	
 	fclose(file);
-	memFree(); // cleanup function
-
-// the errors
+	memFree();
 
 }
 
