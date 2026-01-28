@@ -41,11 +41,19 @@ Testing was conducted at multiple levels, following the modular structure of the
 \subsection{Modular testing:}
 \begin{itemize}
 	\item \textbf{Memory:} tested using test programs focused on validating fucntions and safety. These program tested scenarios like access attemps before allocation, detection of out-of-bounds access, detection of access to freed memory, and correct use of free memory amongst others. 
+\end{itemize}
+
+\subsection{Whole program testing:}
+
 
 \section*{Self-Reflection}
 
-Explain what you learned during this project
+This project gave us practical experience in designing and implementing a modular design in C and an embedded system,emphasizing abstraction, and robustness. One of the main lessons learned was the importance of defining interfaces between modules. By creating modules and interacting through header files, it became easier to divide the work, understand the task at hand, and test components independently, reducing complexity. 
 
+A key technical insight was related to memory management. Designing the memory from scratched improved our understanding of how dynamic memory allocators work internally. 
 
+The project also emphasized the importance of testing. Testing each module was important to give each other interfaces that worked and compiled. But systematic testing was also key specially because of the early termination due to runtime errors. 
+
+Finally, working collaboratively gave us hands-on experience for future group projects in our career. It enforced good software engineering practices and clear communication which are crucial skills to have. Overall, the project strengthened both technical proficiency in C and our understanding of modular design strategies.
 
 \end{document}
