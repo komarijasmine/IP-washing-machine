@@ -1,11 +1,9 @@
 #ifndef FUNCTIONS_H
 #define FUNCTIONS_H
 
-typedef struct Array;
-
 /* EFFECT: Initializes the memory. If not called before other functions, an error will be thrown 
 OUTPUT: 0 upon successful execution of the function; 1 if memory initilazation failed */
-int initializeMemory(void);
+int init(void);
 
 /* EFFECT: Frees the memory allocated for all created arrays and all identifiers 
 OUTPUT: 0 upon successful execution of the function; 1 if freeing memory failed*/

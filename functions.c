@@ -6,12 +6,12 @@
 
 /* Custom list data type that stores the identifier of an array (_arrayName_), 
 the length of the array (_length_), and it's address in memory (_address_) */
-typedef struct
+typedef struct Array
 {
     char *arrayName;
     int length;
     int address;
-    Array *next;
+    struct Array *next;
 } Array;
 
 // Creates static HEAD to list with array identifiers
@@ -19,8 +19,8 @@ static Array *arrays = NULL;
 
 Array *checkArray(char *arrayName);
 int fetchAdress(char *arrayName, int index);
-int freeArrayName(char *arrayName);
-int *getVals(char *arrayName1, char *arrayName2, int *vals);
+int freeArrayName(char *arrayName, int *addressAndLength);
+int getVals(char *arrayName1, char *arrayName2, int *vals);
 
 Array *checkArray(char *arrayName)
 {
@@ -73,12 +73,14 @@ int fetchAdress(char *arrayName, int index)
 }
 
 
-int freeArrayName(char *arrayName)
+int freeArrayName(char *arrayName, int *addressAndLength)
 {
     /* Local function
-    EFFECT: Removes the element of the arrays list with the member .arrayName that is equal to _arrayName_
-    OUTPUT: The memory address of the array with the identiifer _arrayName_; 
-    -1 if no element with member .arrayName equal to _arrayName_ exists */
+    EFFECT: Removes the element of the list with array identifiers of which the member .arrayName 
+    is equal to _arrayName_. Stores the members .address and .length of the element to remove in 
+    _addressAndLength_[0] and _addressAndLength_[1] respectively
+    OUTPUT: 0 upon successful execution of the function; 
+    1 if no element with member .arrayName equal to _arrayName_ exists */
 
     if (arrays)
     {
@@ -89,7 +91,8 @@ int freeArrayName(char *arrayName)
         {
             if (!strcmp(array->arrayName, arrayName))
             {
-                int address = array->address;
+                addressAndLength[0] = array->address;
+                addressAndLength[1] = array->length;
 
                 if (previous)
                 {
@@ -102,7 +105,7 @@ int freeArrayName(char *arrayName)
 
                 free(array);
 
-                return address;
+                return 0;
             }
 
             previous = array;
@@ -111,11 +114,11 @@ int freeArrayName(char *arrayName)
     }
 
     fprintf(stderr, "No array with identifier %s exists", arrayName); 
-    return -1;
+    return 1;
 }
 
 
-int *getVals(char *arrayName1, char *arrayName2, int *vals)
+int getVals(char *arrayName1, char *arrayName2, int *vals)
 {
     /* Local function 
     EFFECT: Fetches the address in memory and the value of the first element of 2 arrays with the 
@@ -319,7 +322,7 @@ int add(char *arrayName1, char *arrayName2)
 
     if (memWrite(vals[0], vals[2] + vals[3]))
     {
-        fprintf("Writing to adress %d of the array with identifier %s failed", vals[0], arrayName1);
+        fprintf(stderr, "Writing to adress %d of the array with identifier %s failed", vals[0], arrayName1);
         return 2;
     }
 
@@ -337,7 +340,7 @@ int subtract(char *arrayName1, char *arrayName2)
 
     if (memWrite(vals[0], vals[2] - vals[3]))
     {
-        fprintf("Writing to adress %d of the array with identifier %s failed", vals[0], arrayName1);
+        fprintf(stderr, "Writing to adress %d of the array with identifier %s failed", vals[0], arrayName1);
         return 2;
     }
 
@@ -355,7 +358,7 @@ int multiply(char *arrayName1, char *arrayName2)
 
     if (memWrite(vals[0], vals[2] * vals[3]))
     {
-        fprintf("Writing to adress %d of the array with identifier %s failed", vals[0], arrayName1);
+        fprintf(stderr, "Writing to adress %d of the array with identifier %s failed", vals[0], arrayName1);
         return 2;
     }
 
@@ -373,7 +376,7 @@ int andCells(char *arrayName1, char *arrayName2)
 
     if (memWrite(vals[0], (vals[2] * vals[3]) % 2))
     {
-        fprintf("Writing to adress %d of the array with identifier %s failed", vals[0], arrayName1);
+        fprintf(stderr, "Writing to adress %d of the array with identifier %s failed", vals[0], arrayName1);
         return 2;
     }
 
@@ -391,7 +394,7 @@ int xorCells(char *arrayName1, char *arrayName2)
 
     if (memWrite(vals[0], (vals[2] + vals[3]) % 2))
     {
-        fprintf("Writing to adress %d of the array with identifier %s failed", vals[0], arrayName1);
+        fprintf(stderr, "Writing to adress %d of the array with identifier %s failed", vals[0], arrayName1);
         return 2;
     }
 
@@ -401,14 +404,14 @@ int xorCells(char *arrayName1, char *arrayName2)
 
 int freeArray(char *arrayName)
 {
-    int address = freeArrayName(arrayName);
-    if (address < 0)
+    int addressAndLength[2];
+    if (freeArrayName(arrayName, addressAndLength))
     {
         fprintf(stderr, "Freeing array with identifier %s failed", arrayName);
         return 1;
     }
 
-    if (memFreeBlock(address))
+    if (memFreeBlock(addressAndLength[0], addressAndLength[1]))
     {
         fprintf(stderr, "Freeing memory of array with identifier %s failed", arrayName);
         return 2;
