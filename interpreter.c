@@ -3,206 +3,298 @@
 #include <string.h>
 #include "functions.h" 
 
+
+int makeInt(char* str, int* num);
+int callCommand(char* opName, char* paramater1, char* paramater2);
 	
-int interpretLine(char *str)
+int interpretLine(char *line)
 {	
-	//delimiter to split
-	char* separater = strtok(str, " ");
+	// Split the line into individual parts using ' ' as delimiter
+	char* opName = strtok(line, " ");
+	char* parameter1 = strtok(NULL, " ");
+	char* parameter2  = strtok(NULL, " ");
 
-	//store token
-	char* token;
-
-	//first token
-	token = strtok(str, separater);
-	char* opName = token;
-	int count =0; 
-	char* token2;
-	char* token3;
-	int num; 
-	char *endptr;
-
-	//continue
-	while(separater != NULL){
-
-		//pass to next token
-		separater = strtok(NULL, " ");
-
-		count++;
-		if (count == 1)
-			token2 = token;
-		else if (count == 2)
-			token3  = token;
-		else
-			return 1;
-
-	} 
-	
-	if (!strcmp(opName, "Ass")){
-		num = strtol(token3, &endptr, 10);
-		if (count != 2)
-		{
-			return 1;
-		}
-		if (assign(token2,num))
-		{
-			fprintf(stderr, "Assign value %s to the array with identifier %s failed", token3, token2);
-			return 1;
-		}
-	}
-
-	if (!strcmp(opName, "Inc"))
+	if (strtok(NULL, " "))
 	{
-
-		num = strtol(token3, &endptr, 10);
-		if (count !=2)
-		{
-			return 1;
-		}
-		if (increase(token2,num)){
-
-			fprintf(stderr, "Assign value %s to the array with identifier %s failed", token3, token2);
-			return 1;
-		}
+		fprintf(stderr, "Command contains too many paramater\n");
+		return 1;
 	}
-	
-	if (!strcmp(opName, "Dec"))
+
+	if (callCommand(opName, parameter1, parameter2))
 	{
-
-		num = strtol(token3, &endptr, 10);
-		if (count !=2)
-		{
-			return 1;
-		}
-		if (decrease(token2,num)){
-
-			fprintf(stderr, "Assign value %s to the array with identifier %s failed", token3, token2);
-			return 1;
-		}
-	}
-				
-	if (!strcmp(opName,"Mal"))
-	{
-	
-		num = strtol(token3, &endptr, 10);
-		if (count !=2)
-		{
-			return 1;
-		}
-		if (allocate(token2,num)){
-
-			fprintf(stderr, "Assign value %s to the array with identifier %s failed", token3, token2);
-			return 1;
-		}
-	}
-			
-	if (!strcmp(opName,"Pri"))
-	{
-	
-		num = strtol(token3, &endptr, 10);
-		if (count !=2)
-		{
-			return 1;
-		}
-		if (printCell(token2,num)){
-
-			fprintf(stderr, "Assign value %s to the array with identifier %s failed", token3, token2);
-			return 1;
-		}
-	}
-		
-
-	if(!strcmp(opName,"Add"))
-	{
-		if (count !=2)
-		{
-			return 1;
-		}
-		if (add(token2,token3)){
-
-			fprintf(stderr, "Assign value %s to the array with identifier %s failed", token3, token2);
-			return 1;
-		}
-	}
-		
-	if(!strcmp(opName,"Sub"))
-	{
-		if (count !=2)
-		{
-			return 1;
-		}
-		if (subtract(token2,token3)){
-
-			fprintf(stderr, "Assign value %s to the array with identifier %s failed", token3, token2);
-			return 1;
-		}
-	}
-		
-	if(!strcmp(opName,"Mul"))
-	{
-		if (count !=2)
-		{
-			return 1;
-		}
-		if (multiply(token2,token3)){
-
-			fprintf(stderr, "Assign value %s to the array with identifier %s failed", token3, token2);
-			return 1;
-		}
-	}
-	
-	if(!strcmp(opName,"And"))
-	{
-		if (count !=2)
-		{
-			return 1;
-		}
-		if (andCells(token2,token3)){
-
-			fprintf(stderr, "Assign value %s to the array with identifier %s failed", token3, token2);
-			return 1;
-		}
-	}
-		
-	if(!strcmp(opName, "Xor"))
-	{
-		if (count !=2)
-		{
-			return 1;
-		}
-		if (xorCells(token2,token3)){
-
-			fprintf(stderr, "Assign value %s to the array with identifier %s failed", token3, token2);
-			return 1;
-		}
+		return 2;
 	}
 
-	if(!strcmp(opName, "Fre"))
-	{
-		if (count !=1)
-		{
-			return 1;
-		}
-		if (freeArray(token2)){
-
-			fprintf(stderr, "Assign value %s to the array with identifier %s failed", token3, token2);
-			return 1;
-		}
-	}
-
-
-	
-	if(!strcmp(opName, "Pra"))
-	{
-		if (count !=1)
-		{
-			return 1;
-		}
-		if (printArray(token2)){
-
-			fprintf(stderr, "Assign value %s to the array with identifier %s failed", token3, token2);
-			return 1;
-		}
-	}
-
-	return 1;
+	return 0;
 }
+
+
+int makeInt(char* str, int* num)
+{
+	/* Local function 
+    EFFECT: Turns a string containing numbers into an integer number of base-10
+    OUTPUT: 0 upon successful execution; 1 if the string contains characters that are not numbers */
+
+	char* endptr;
+    *num = strtol(str, &endptr, 10);
+
+	// If _endptr_ is a non-empty string, then _str_ must have contained non-number characters
+    if (*endptr != '\0')
+    {
+        fprintf(stderr, "Invalid paramater %s. Must be a number\n", str);
+        return 1;
+    }
+
+    return 0;
+}
+
+
+int callCommand(char* opName, char* parameter1, char* parameter2)
+{
+	/* Local function 
+    EFFECT: Calls a function based on _opName_ passing _parameter1_ and _paramater2_. 
+	Checks whether correct amount of parameters have been passed.
+    OUTPUT: 0 upon successful execution; 
+	1 if an incorrect number of paramters for the function identified with _opName_ has been passed;
+	2 if _parameter2_ could not be converted to a decimal number when this is necessary for the 
+	function identified with _opName_; 
+	3 if the function identified with _opName_ failed */
+
+	if (!strcmp(opName, "Ass")){
+		if (!parameter2)
+		{
+            fprintf(stderr, "Command %s requires 2 parameters, but only 1 was supplied\n", opName);
+			return 1;
+		}
+
+		int num;
+		if (makeInt(parameter2, &num))
+		{
+			return 2;
+		}
+
+		if (assign(parameter1, num))
+		{
+			return 3;
+		}
+
+        return 0;
+	}
+	else if (!strcmp(opName, "Inc"))
+	{
+		if (!parameter2)
+		{
+            fprintf(stderr, "Command %s requires 2 parameters, but only 1 was supplied\n", opName);
+			return 1;
+		}
+
+		int index;
+		if (makeInt(parameter2, &index))
+		{
+			return 2;
+		}
+
+		if (increase(parameter1, index))
+		{
+			return 3;
+		}
+
+        return 0;
+	}
+	else if (!strcmp(opName, "Dec"))
+	{
+		if (!parameter2)
+		{
+            fprintf(stderr, "Command %s requires 2 parameters, but only 1 was supplied\n", opName);
+			return 1;
+		}
+
+		int index;
+		if (makeInt(parameter2, &index))
+		{
+			return 2;
+		}
+
+		if (decrease(parameter1, index))
+		{
+			return 3;
+		}
+
+        return 0;
+	}			
+	else if (!strcmp(opName, "Mal"))
+	{
+		if (!parameter2)
+		{
+            fprintf(stderr, "Command %s requires 2 parameters, but only 1 was supplied\n", opName);
+			return 1;
+		}
+
+		int length;
+		if (makeInt(parameter2, &length))
+		{
+			return 2;
+		}
+
+		if (allocate(parameter1, length))
+		{
+			return 3;
+		}
+
+        return 0;
+	}
+	else if (!strcmp(opName, "Pri"))
+	{
+		if (!parameter2)
+		{
+            fprintf(stderr, "Command %s requires 2 parameters, but only 1 was supplied\n", opName);
+			return 1;
+		}
+
+		int index;
+		if (makeInt(parameter2, &index))
+		{
+			return 2;
+		}
+
+		if (printCell(parameter1, index))
+		{
+			return 3;
+		}
+
+        return 0;
+    }
+    else if (!strcmp(opName, "Add"))
+	{
+		if (!parameter2)
+		{
+            fprintf(stderr, "Command %s requires 2 parameters, but only 1 was supplied\n", opName);
+			return 1;
+		}
+
+		if (add(parameter1, parameter2))
+		{
+			return 3;
+		}
+
+        return 0;
+	}
+	else if (!strcmp(opName, "Sub"))
+	{
+		if (!parameter2)
+		{
+            fprintf(stderr, "Command %s requires 2 parameters, but only 1 was supplied\n", opName);
+			return 1;
+		}
+
+		if (subtract(parameter1, parameter2))
+		{
+			return 3;
+		}
+
+        return 0;
+	}	
+	else if (!strcmp(opName, "Mul"))
+	{
+		if (!parameter2)
+		{
+            fprintf(stderr, "Command %s requires 2 parameters, but only 1 was supplied\n", opName);
+			return 1;
+		}
+
+		if (multiply(parameter1, parameter2))
+		{
+			return 3;
+		}
+
+        return 0;
+	}
+	else if (!strcmp(opName, "And"))
+	{
+		if (!parameter2)
+		{
+            fprintf(stderr, "Command %s requires 2 parameters, but only 1 was supplied\n", opName);
+			return 1;
+		}
+
+		if (andCells(parameter1, parameter2))
+		{
+			return 3;
+		}
+
+        return 0;
+	}	
+	else if (!strcmp(opName, "Xor"))
+	{
+		if (!parameter2)
+		{
+            fprintf(stderr, "Command %s requires 2 parameters, but only 1 was supplied\n", opName);
+			return 1;
+		}
+
+		if (xorCells(parameter1, parameter2))
+		{
+			return 3;
+		}
+
+        return 0;
+	}
+	else if (!strcmp(opName, "Fre"))
+	{
+		if (parameter2)
+		{
+            fprintf(stderr, "Command %s requires 1 parameters, but 2 were supplied\n", opName);
+			return 1;
+		}
+
+		if (freeArray(parameter1))
+		{
+			return 3;
+		}
+
+        return 0;
+	}
+	else if (!strcmp(opName, "Pra"))
+	{
+		if (parameter2)
+		{
+            fprintf(stderr, "Command %s requires 1 parameters, but 2 were supplied\n", opName);
+			return 1;
+		}
+
+		if (printArray(parameter1))
+		{
+			return 3;
+		}
+
+        return 0;
+	}
+
+    fprintf(stderr, "Unknown command %s\n", opName);
+	return 4;
+}
+
+
+int initializeProgram(void)
+{
+	if (init())
+	{
+		fprintf(stderr, "Initializing program failed\n");
+		return 1;
+	}
+
+	return 0;
+}
+
+
+int terminateProgram(void)
+{
+	if (freeAll())
+	{
+		fprintf(stderr, "Terminating program failed\n");
+		return 1;
+	}
+
+	return 0;
+}
+

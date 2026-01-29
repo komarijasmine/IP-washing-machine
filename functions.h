@@ -1,8 +1,8 @@
 #ifndef FUNCTIONS_H
 #define FUNCTIONS_H
 
-/* EFFECT: Initializes the memory. If not called before other functions, an error will be thrown 
-OUTPUT: 0 upon successful execution of the function; 1 if memory initilazation failed */
+/* EFFECT: Initializes the memory. Needs to be called before any other function
+OUTPUT: 0 upon successful execution of the function; 1 if memory initialization failed */
 int init(void);
 
 /* EFFECT: Frees the memory allocated for all created arrays and all identifiers 
@@ -62,17 +62,17 @@ the arrays with identifiers _arrayName1_ and _arrayName2_ failed; 2 if writing t
 of the array with identifier _arrayName1_ failed */
 int multiply(char *arrayName1, char *arrayName2);
 
-/* EFFECT: Performs the AND operation on the value of the first element of the array with identifier 
-_arrayName1_ and the value of the first element of the array with identifier _arrayName2_ and writes
-the result to the first element of the array with identifier _arrayName1_
+/* EFFECT: Performs the point-wise AND operation on the value of the first element of the array with 
+identifier _arrayName1_ and the value of the first element of the array with identifier _arrayName2_ 
+and writes the result to the first element of the array with identifier _arrayName1_
 OUTPUT: 0 upon successful execution of the function; 1 if getting the values of the first elements 
 of the arrays with identifiers _arrayName1_ and _arrayName2_ failed; 2 if writing to the first 
 element of the array with identifier _arrayName1_ failed */
 int andCells(char *arrayName1, char *arrayName2);
 
-/* EFFECT: Performs the XOR operation on the value of the first element of the array with identifier 
-_arrayName1_ and the value of the first element of the array with identifier _arrayName2_ and writes
-the result to the first element of the array with identifier _arrayName1_
+/* EFFECT: Performs the point-wise XOR operation on the value of the first element of the array with 
+identifier _arrayName1_ and the value of the first element of the array with identifier _arrayName2_ 
+and writes the result to the first element of the array with identifier _arrayName1_
 OUTPUT: 0 upon successful execution of the function; 1 if getting the values of the first elements 
 of the arrays with identifiers _arrayName1_ and _arrayName2_ failed; 2 if writing to the first 
 element of the array with identifier _arrayName1_ failed */

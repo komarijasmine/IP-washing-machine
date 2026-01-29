@@ -1,20 +1,27 @@
-memory.o: memory.c
-		$(CC) -c memory.c
+CC = gcc
+CFLAGS = -Wall -pedantic
 
-functions.o: memory.h functions.c
-		$(CC) -c functions.c
+all: exec
 
-interpret.o: functions.h interpret.c
-		$(CC) -c interpret.c
+exec: main.o interpreter.o functions.o memory.o
+		$(CC) $(CFLAGS) main.o interpreter.o functions.o memory.o -o exec
 
-main.o: interpret.h main.c
-		$(CC) -c main.c
+main.o: interpreter.h main.c
+		$(CC) $(CFLAGS) -c main.c
 
-all: main.o interpret.o functions.o memory.o
-		$(CC) main.o interpret.o functions.o memory.o -o exec
+interpreter.o: functions.h interpreter.h interpreter.c
+		$(CC) $(CFLAGS) -c interpreter.c
 
-allclean: all
-		rm memory.o functions.o interpret.o main.o
+functions.o: memory.h functions.h functions.c
+		$(CC) $(CFLAGS) -c functions.c
 
-run: allclean
+memory.o: memory.h memory.c
+		$(CC) $(CFLAGS) -c memory.c
+
+clean:
+		rm -f memory.o functions.o interpreter.o main.o
+
+allclean: exec clean
+
+run: exec
 		./exec
