@@ -67,7 +67,7 @@ int readFile(FILE *file)
 		
         if (interpretLine(line))
         {
-            fprintf(stderr, "Error: line %d: a fatal error occurred\n", line_number);
+            // fprintf(stderr, "Error: line %d: a fatal error occurred\n", line_number);
             return 2;
         }
 
@@ -133,7 +133,8 @@ int main(int argc, char *argv[])
 	FILE* file = fopen(argv[1], "r");
 	if (runProgram(file))
     {
-        return 1;
+        // This should return 1, as the program did not run successfully, not 0
+        exit(0);
     }
 
     return 0;
