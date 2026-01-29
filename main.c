@@ -120,12 +120,17 @@ int runProgram(FILE *file)
 }
 
 
-int main(void) 
+int main(int argc, char *argv[]) 
 {
     /* EFFECT: Reads, interprets, and executes lines in the format as described in interpreter.h
     OUTPUT: 0 upon successful execution; 1 if an error occurred while executing */
 
-	FILE* file = fopen("test.txt", "r");
+    if (argc != 2)
+    {
+        fprintf(stderr, "Please provide (only) the file to read\n");
+    }
+
+	FILE* file = fopen(argv[1], "r");
 	if (runProgram(file))
     {
         return 1;

@@ -18,11 +18,10 @@ The project involves developing an interpreter to manage a small programming lan
 \section*{Structure of the Project}
 Each module was created based on a clear task breakdown:
 \begin{itemize}
-    \item main.c: Read the input file given by user and process line by line. Reports runtime errors.
-    \item interpreter.c: Parse and interpret each line (3-character command, parameter1 and parameter2) and select operations.
+    \item main.c: read the input file given by user, do basic formatting and checking of each line, and pass them to interpeter.c
+    \item interpreter.c: parse and interpret each line (3-character command, parameter1 (and parameter2)) and select operations
+    \item functions.c: program operations required for the programming language as well as variable tracking
     \item memory.c: manages the memory required by the mini-language. It provides functions to allocate and free contiguous memory blocks as well as to read and modify certain cells in memory.
-    \item functions.c: Program operations required for the programming language as well as variable tracking.
-
 \end{itemize}
 
 To make use of the modularity of Abstract Data Types (ADTs), each module was accompanied by a header file that reveals only the necessary functionalities.
@@ -31,7 +30,7 @@ To make use of the modularity of Abstract Data Types (ADTs), each module was acc
 
 \begin{itemize}
 	\item \textbf{Memory}: the data structures used are a fixed-size array of 100 integer cells and a linked list to track free memory. Each node of the list stores the start position and length of a contiguous free block in memory. This design was chosen because to avoid scanning the entire memory array on each (de) allocation. Allocation uses a \emph{best-fit} strategy, selecting smallest free blocks that can satisfy requests. This reduces fragmentation while keeping implementation simple. In the worst case, allocation runs in $O(n)$ where $n$ is the number of free segments. Deallocation reinserts a freed block into the free list in order and deals with overlapping/adjacent segments. To ensure safety, the module prevents access to unallocated memory, checking the free list, which also runs in $O(n)$. The module owns and manages its internal memory state entirely as the internal \texttt{Memory} struct is not exposed in header file, enforcing encapsulation.
-    \item Variables: ///
+    \item \textbf{Variables}: the array identifiers are stored in a list where each element contains the array identifier, the length of the array (as the interpreter can use external memory, this allows for more efficient use of the internal memory as no array terminators are necessary), and the address of the first element of the array in memory (stored as an int between 0 and 99). New array identifiers are added to the end of the list.
 \end{itemize}
 
 \section*{Testing}
@@ -41,13 +40,13 @@ Testing was conducted at multiple levels, following the modular structure of the
 \subsection{Modular testing:}
 \begin{itemize}
 	\item \textbf{Memory:} tested using test programs focused on validating fucntions and safety. These program tested scenarios like access attemps before allocation, detection of out-of-bounds access, detection of access to freed memory, and correct use of free memory amongst others. 
-	\item \textbf{Parser (main.c):} tested using the interpreter.h file, a simple interpreter.c file that prints text to show success, and a text.txt file. These programs tested parsing of valid input as well as invalid input using edge cases (an empty line, a line with too many characters). 
-    
+	\item \textbf{Parser (main.c):} tested using the interpreter.h file, a simple interpreter.c file that prints text to show success, and a text.txt file. These programs tested parsing of valid input as well as invalid input using edge cases (an empty line, a line with too many characters). Also tested through the whole program testing.
+    \item \textbf{functions.c and interpreter.c:} tested using a testing program that tested all publicly-available functions (including initialization and cleanup) (for functions.c and interpreter.c individually) (i.e., observable behavior was tested, not internals. The local functions were indirectly tested through testing the publicly-available ones) with two normal values, edge case values, and incorrect values (e.g., invalid commands, semantic errors, invalid syntax), whereby accounting for all possible bad input.
 \end{itemize}
 
 \subsection{Whole program testing:}
 \begin{itemize}
-	\item \textbf{Parsing and Interpreting}: need to test if main.c returns errors given from the interpreter
+	\item \textbf{Parsing and Interpreting}: Tested using multiple text files with commands. All commands, edge cases, and incorrect syntax and semantic errors were tested.
 
 \end{itemize}
 
@@ -55,9 +54,9 @@ Testing was conducted at multiple levels, following the modular structure of the
 
 This project gave us practical experience in designing and implementing a modular design in C and an embedded system, emphasizing abstraction and robustness. One of the main lessons learned was the importance of defining interfaces between modules. By creating modules and interacting through header files, it became easier to divide the work, understand the task at hand, and test components independently, reducing complexity. 
 
-A key technical insight was related to memory management. Designing the memory from scratched improved our understanding of how dynamic memory allocators work internally. 
+A key technical insight was related to memory management. Designing the memory from scratch improved our understanding of how dynamic memory allocators work internally. 
 
-The project also emphasized the importance of testing. Testing each module was important to give each other interfaces that worked and compiled. But systematic testing was also key specially because of the early termination due to runtime errors. 
+The project also emphasized the importance of testing. Testing each module was important to give each other interfaces that worked and compiled. But systematic testing was also key especially because of the early termination due to runtime errors. 
 
 Finally, working collaboratively gave us hands-on experience for future group projects in our career. It enforced good software engineering practices and clear communication which are crucial skills to have. Overall, the project strengthened both technical proficiency in C and our understanding of modular design strategies.
 

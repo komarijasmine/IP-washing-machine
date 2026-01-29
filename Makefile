@@ -1,10 +1,11 @@
 CC = gcc
 CFLAGS = -Wall -pedantic
+EXEC = interpreter
 
-all: exec
+all: $(EXEC)
 
-exec: main.o interpreter.o functions.o memory.o
-		$(CC) $(CFLAGS) main.o interpreter.o functions.o memory.o -o exec
+$(EXEC): main.o interpreter.o functions.o memory.o
+		$(CC) $(CFLAGS) main.o interpreter.o functions.o memory.o -o $(EXEC) 
 
 main.o: interpreter.h main.c
 		$(CC) $(CFLAGS) -c main.c
@@ -21,7 +22,7 @@ memory.o: memory.h memory.c
 clean:
 		rm -f memory.o functions.o interpreter.o main.o
 
-allclean: exec clean
+allclean: $(EXEC) clean
 
-run: exec
-		./exec
+run: $(EXEC)
+		./$(EXEC)
