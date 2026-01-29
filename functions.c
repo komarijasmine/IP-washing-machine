@@ -17,12 +17,15 @@ typedef struct Array
 // Creates static HEAD to list with array identifiers
 static Array *arrays = NULL;
 
-Array *checkArray(const char *arrayName);
-int fetchaddress(const char *arrayName, int index);
+// Local functions
+static Array *checkArray(const char *arrayName);
+int fetchAddress(const char *arrayName, int index);
 int freeArrayName(const char *arrayName, int *addressAndLength);
-int getVals(const char *arrayName1, const char *arrayName2, int *vals);
+int singleElementOperation(int address, int value1, int value2, char operator);
+int executeDualArrayOperator(Array *array1, Array *array2, char operator, int onlyFirstElement);
+int dualArrayOperator(const char *arrayName1, const char *arrayName2, char operator, int onlyFirstElement);
 
-Array *checkArray(const char *arrayName)
+static Array *checkArray(const char *arrayName)
 {
     /* Local function 
     EFFECT: Checks whether an array with identifier _arrayName_ exists
@@ -47,7 +50,7 @@ Array *checkArray(const char *arrayName)
 }
 
 
-int fetchaddress(const char *arrayName, int index)
+int fetchAddress(const char *arrayName, int index)
 {
     /* Local function 
     EFFECT: Check whether the array with identifier _arrayName_ exists and whether index is within its range
@@ -118,43 +121,142 @@ int freeArrayName(const char *arrayName, int *addressAndLength)
 }
 
 
-int getVals(const char *arrayName1, const char *arrayName2, int *vals)
+int singleElementOperation(int address, int value1, int value2, char operator)
 {
-    /* Local function 
-    EFFECT: Fetches the address in memory and the value of the first element of 2 arrays with the 
-    identifier _arrayName1_ and _arrayName2_. This is stored in _vals_, where vals[0] is the memory 
-    address of the array with the identifier _arrayName1_, vals[1] is the memory address of the array 
-    with the identifier _arrayName2_, vals[2] is the value of the first element of the array with 
-    the identifier _arrayName1_, and vals[3] is the value of the first element of the array with 
-    the identifier _arrayName2_
+    /* Local function
+    EFFECT: Computes result of _operator_ _value1_ _value2_ and writes result to _address_
     OUTPUT: 0 upon successful execution of the function; 
-    1 if fetching the memory address of the array with the identifier _arrayName1_ failed; 
-    2 if fetching the memory address of the array with the identifier _arrayName2_ failed;
-    3 if reading the memory cell of the first element of the array with the identifier _arrayName1_ failed,
-    4 if reading the memory cell of the first element of the array with the identifier _arrayName2_ failed */
+    1 if no or an invalid operator was given */
 
-    vals[0] = fetchaddress(arrayName1, 0);
-    if (vals[0] < 0)
+    int result = 0;
+    if (operator == '+')
+    {
+        result = value1 + value2;
+    }
+    else if (operator == '-')
+    {
+        result = value1 - value2;
+    }
+    else if (operator == '*')
+    {
+        result = value1 * value2;
+    }
+    else if (operator == '&')
+    {
+        result = (value1 * value2) % 2;
+    }
+    else if (operator == '^')
+    {
+        result = (value1 + value2) % 2;
+    }
+    else
     {
         return 1;
     }
 
-    vals[1] = fetchaddress(arrayName2, 0);
-    if (vals[1] < 0)
+    if (memWrite(address, result))
     {
         return 2;
     }
 
-    if (memRead(vals[0], &vals[2]))
+    return 0;
+}
+
+
+int executeDualArrayOperator(Array *array1, Array *array2, char operator, int onlyFirstElement)
+{
+    /* Local function
+    EFFECT: Computes result of _operator_ _array1_ _array2_ and writes result to _array1_. If 
+    _onlyFirstElement_ is 1, the operation is only done on the first element of _array1_ and
+    _array2_. If _onlyFirstElement_ is 0, _array1_ and _array2_ must be the same lenght, and
+    the operation will be done on each element of _array1_ and _array2_ (pointwise) 
+    OUTPUT: 0 upon successful execution of the function; 
+    1 if reading the elements of the array with identifier _arrayName1_ failed;
+    2 if reading the elements of the array with identifier_arrayName2_ failed; 
+    3 if writing to the array with identifier _arrayName1_ failed 
+    4 if no or an invalid operator was supplied;
+    5 if _onlyFirstElement_ is 0 and _array1_ and _array2_ are of different length */
+    
+    int i, n = 1;
+    if (!onlyFirstElement)
     {
-        fprintf(stderr, "Error: reading the memory cell of the array with identifier %s with the address %d failed\n", arrayName1, vals[0]);
-        return 3;
+        // Check whether arrays are of same length
+        if (array1->length != array2->length)
+        {
+            fprintf(stderr, "Error: a point-wise AND or XOR operation cannot be performed on the array with identifier %s of length %d and the array with identifier %s of length %d. The length of the arrays must be the same\n", array1->arrayName, array1->length, array2->arrayName, array2->length);
+            return 5;
+        }
+
+        n = array1->length;
     }
 
-    if (memRead(vals[1], &vals[3]))
+    for (i = 0; i < n; i++)
     {
-        fprintf(stderr, "Error: reading the memory cell of the array with identifier %s with the address %d failed\n", arrayName2, vals[1]);
-        return 4;
+        int element1;
+        if (memRead(array1->address + i, &element1))
+        {
+            fprintf(stderr, "Error: reading to address %d (index %d) of the array with identifier %s failed\n", array1->address + i, i, array1->arrayName);
+            return 1;
+        }
+
+        int element2;
+        if (memRead(array2->address + i, &element2))
+        {
+            fprintf(stderr, "Error: reading to address %d (index %d) of the array with identifier %s failed\n", array2->address + i, i, array2->arrayName);
+            return 2;
+        }
+
+        int error = singleElementOperation(array1->address + i, element1, element2, operator);
+        if (error)
+        {
+            if (error == 1)
+            {
+                fprintf(stderr, "Error: invalid or no operator supplied\n");
+                return 4;
+            }
+            if (error == 2)
+            {
+                fprintf(stderr, "Error: writing to address %d (index %d) of the array with identifier %s failed\n", array1->address + i, i, array1->arrayName);
+                return 3;
+            }
+        }
+    }
+
+    return 0;
+}
+
+int dualArrayOperator(const char *arrayName1, const char *arrayName2, char operator, int onlyFirstElement)
+{
+    /* Local function
+    EFFECT: Computes the result of performing the operator associated with _operator_ on the array
+    with identifier _arrayName1_ and the array with identifier _arrayName2_ and writes result to 
+    the array with identifier _arrayName1_. If _onlyFirstElement_ is 1, the operation is only done 
+    on the first element of the array with identifier _arrayName1_ and the array with identifier 
+    _arrayName2_. If _onlyFirstElement_ is 0, the array with identifier _arrayName1_ and the array
+    with identifier _arrayName2_ must be the same lenght, and the operation will be done pointwise 
+    on each element of the arrays
+    OUTPUT: 0 upon successful execution of the function; 
+    1 if fetching the array with the identifier _arrayName1_ failed; 
+    2 if fetching the array with the identifier _arrayName2_ failed;
+    3 if reading, writing, or computing the result failed */
+
+    Array *array1 = checkArray(arrayName1);
+    if (!array1 || array1->address < 0)
+    {
+        fprintf(stderr, "Error: no array with identifier %s exist\n", arrayName1);
+        return 1;
+    }
+
+    Array *array2 = checkArray(arrayName2);
+    if (!array2 || array2->address < 0)
+    {
+        fprintf(stderr, "Error: no array with identifier %s exist\n", arrayName2);
+        return 2;
+    }
+
+    if (executeDualArrayOperator(array1, array2, operator, onlyFirstElement))
+    {
+        return 3;
     }
 
     return 0;
@@ -180,6 +282,11 @@ int freeAll(void)
 	{
 		// Frees the first element of _arrays_. _arrays_ points to the next element after removal
         char *arrayName = arrays->arrayName;
+        if (!arrayName) {
+            memFree();
+            return 1;
+        }
+
 		if (freeArray(arrayName))
 		{
 			memFree();
@@ -195,7 +302,7 @@ int freeAll(void)
 
 int assign(const char *arrayName, int value)
 {
-    int address = fetchaddress(arrayName, 0);
+    int address = fetchAddress(arrayName, 0);
     if (address < 0)
     {
         fprintf(stderr, "Error: fetching address of the array with identifier %s failed\n", arrayName);       
@@ -214,7 +321,7 @@ int assign(const char *arrayName, int value)
 
 int increase(const char *arrayName, int index)
 {
-    int address = fetchaddress(arrayName, index);
+    int address = fetchAddress(arrayName, index);
     if (address < 0)
     {
         fprintf(stderr, "Error: fetching address of the array with identifier %s failed\n", arrayName);     
@@ -233,7 +340,7 @@ int increase(const char *arrayName, int index)
 
 int decrease(const char *arrayName, int index)
 {
-    int address = fetchaddress(arrayName, index);
+    int address = fetchAddress(arrayName, index);
     if (address < 0)
     {
         fprintf(stderr, "Error: fetching address of the array with identifier %s failed\n", arrayName);  
@@ -254,14 +361,14 @@ int allocate(const char *arrayName, int length)
 {
     if (length <= 0)
     {
-        fprintf(stderr, "Error: invalid length %d of array", length);
+        fprintf(stderr, "Error: invalid length %d of array\n", length);
         return 1;
     }
 
     // Check that _arrayName_ doesn't already exist
     if (checkArray(arrayName))
     {
-        fprintf(stderr, "Error: array with identifier %s already exists", arrayName);
+        fprintf(stderr, "Error: array with identifier %s already exists\n", arrayName);
         return 2;
     }
 
@@ -279,7 +386,7 @@ int allocate(const char *arrayName, int length)
     if (!newElement->arrayName)
     {
         free(newElement);
-        fprintf(stderr, "Error: an error occured while allocating memory to store identifier %s", arrayName);
+        fprintf(stderr, "Error: an error occured while allocating memory to store identifier %s\n", arrayName);
         return 4;
     }
 
@@ -289,6 +396,7 @@ int allocate(const char *arrayName, int length)
     // Allocate space in memory for array and store its address
     if (memAlloc(length, &(newElement->address)))
     {
+        free(newElement->arrayName);
         free(newElement);
         fprintf(stderr, "Error: allocating memory for the array with identifier %s failed\n", arrayName);
         return 5;
@@ -315,7 +423,7 @@ int allocate(const char *arrayName, int length)
 
 int printCell(const char *arrayName, int index)
 {
-    int address = fetchaddress(arrayName, index);
+    int address = fetchAddress(arrayName, index);
     if (address < 0)
     {
         fprintf(stderr, "Error: fetching address of the array with identifier %s failed\n", arrayName);    
@@ -337,16 +445,9 @@ int printCell(const char *arrayName, int index)
 
 int add(const char *arrayName1, const char *arrayName2)
 {
-    int vals[4];
-    if (getVals(arrayName1, arrayName2, vals))
+    if (dualArrayOperator(arrayName1, arrayName2, '+', 1))
     {
         return 1;
-    }
-
-    if (memWrite(vals[0], vals[2] + vals[3]))
-    {
-        fprintf(stderr, "Error: writing to address %d of the array with identifier %s failed\n", vals[0], arrayName1);
-        return 2;
     }
 
     return 0;
@@ -355,16 +456,9 @@ int add(const char *arrayName1, const char *arrayName2)
 
 int subtract(const char *arrayName1, const char *arrayName2)
 {
-    int vals[4];
-    if (getVals(arrayName1, arrayName2, vals))
+    if (dualArrayOperator(arrayName1, arrayName2, '-', 1))
     {
         return 1;
-    }
-
-    if (memWrite(vals[0], vals[2] - vals[3]))
-    {
-        fprintf(stderr, "Error: writing to address %d of the array with identifier %s failed\n", vals[0], arrayName1);
-        return 2;
     }
 
     return 0;
@@ -373,52 +467,31 @@ int subtract(const char *arrayName1, const char *arrayName2)
 
 int multiply(const char *arrayName1, const char *arrayName2)
 {
-    int vals[4];
-    if (getVals(arrayName1, arrayName2, vals))
+    if (dualArrayOperator(arrayName1, arrayName2, '*', 1))
     {
         return 1;
-    }
-
-    if (memWrite(vals[0], vals[2] * vals[3]))
-    {
-        fprintf(stderr, "Error: writing to address %d of the array with identifier %s failed\n", vals[0], arrayName1);
-        return 2;
     }
 
     return 0;
 }
 
 
-int andCells(const char *arrayName1, const char *arrayName2)
+int andArrays(const char *arrayName1, const char *arrayName2)
 {
-    int vals[4];
-    if (getVals(arrayName1, arrayName2, vals))
+    if (dualArrayOperator(arrayName1, arrayName2, '&', 0))
     {
         return 1;
-    }
-
-    if (memWrite(vals[0], vals[2] & vals[3]))
-    {
-        fprintf(stderr, "Error: writing to address %d of the array with identifier %s failed\n", vals[0], arrayName1);
-        return 2;
     }
 
     return 0;
 }
 
 
-int xorCells(const char *arrayName1, const char *arrayName2)
+int xorArrays(const char *arrayName1, const char *arrayName2)
 {
-    int vals[4];
-    if (getVals(arrayName1, arrayName2, vals))
+    if (dualArrayOperator(arrayName1, arrayName2, '^', 0))
     {
         return 1;
-    }
-
-    if (memWrite(vals[0], vals[2] ^ vals[3]))
-    {
-        fprintf(stderr, "Error: writing to address %d of the array with identifier %s failed\n", vals[0], arrayName1);
-        return 2;
     }
 
     return 0;

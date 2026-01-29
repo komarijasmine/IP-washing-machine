@@ -45,42 +45,32 @@ int printCell(const char *arrayName, int index);
 /* EFFECT: Adds the value of the first element of the array with identifier _arrayName1_ to the value
 of the first element of the array with the identifier _arrayName2_ and writes the result to the first 
 element of the array with identifier _arrayName1_ 
-OUTPUT: 0 upon successful execution of the function; 1 if getting the values of the first elements of 
-the arrays with identifiers _arrayName1_ and _arrayName2_ failed; 2 if writing to the first element 
-of the array with identifier _arrayName1_ failed */
+OUTPUT: 0 upon successful execution of the function; 1 if execution failed */
 int add(const char *arrayName1, const char *arrayName2);
 
 /* EFFECT: Subtracts the value of the first element of the array with identifier _arrayName2_ from the 
 value of the first element of the array with the identifier _arrayName1_ and writes the result to the 
 first element of the array with identifier _arrayName1_ 
-OUTPUT: 0 upon successful execution of the function; 1 if getting the values of the first elements of 
-the arrays with identifiers _arrayName1_ and _arrayName2_ failed; 2 if writing to the first element 
-of the array with identifier _arrayName1_ failed */
+OUTPUT: 0 upon successful execution of the function; 1 if execution failed */
 int subtract(const char *arrayName1, const char *arrayName2);
 
 /* EFFECT: Multiplies the value of the first element of the array with identifier _arrayName1_ with 
 the value of the first element of the array with the identifier _arrayName2_ and writes the result 
 to the first element of the array with identifier _arrayName1_ 
-OUTPUT: 0 upon successful execution of the function; 1 if getting the values of the first elements of 
-the arrays with identifiers _arrayName1_ and _arrayName2_ failed; 2 if writing to the first element 
-of the array with identifier _arrayName1_ failed */
+OUTPUT: 0 upon successful execution of the function; 1 if execution failed */
 int multiply(const char *arrayName1, const char *arrayName2);
 
 /* EFFECT: Performs the point-wise AND operation on the value of the first element of the array with 
 identifier _arrayName1_ and the value of the first element of the array with identifier _arrayName2_ 
 and writes the result to the first element of the array with identifier _arrayName1_
-OUTPUT: 0 upon successful execution of the function; 1 if getting the values of the first elements 
-of the arrays with identifiers _arrayName1_ and _arrayName2_ failed; 2 if writing to the first 
-element of the array with identifier _arrayName1_ failed */
-int andCells(const char *arrayName1, const char *arrayName2);
+OUTPUT: 0 upon successful execution of the function; 1 if execution failed */
+int andArrays(const char *arrayName1, const char *arrayName2);
 
 /* EFFECT: Performs the point-wise XOR operation on the value of the first element of the array with 
 identifier _arrayName1_ and the value of the first element of the array with identifier _arrayName2_ 
 and writes the result to the first element of the array with identifier _arrayName1_
-OUTPUT: 0 upon successful execution of the function; 1 if getting the values of the first elements 
-of the arrays with identifiers _arrayName1_ and _arrayName2_ failed; 2 if writing to the first 
-element of the array with identifier _arrayName1_ failed */
-int xorCells(const char *arrayName1, const char *arrayName2);
+OUTPUT: 0 upon successful execution of the function; 1 if execution failed */
+int xorArrays(const char *arrayName1, const char *arrayName2);
 
 /* EFFCT: Frees the memory allocated for the array with identifier _arrayName_ and removes and frees 
 the memory allocated for storing the identifier _arrayName_ 

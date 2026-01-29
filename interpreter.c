@@ -3,7 +3,7 @@
 #include <string.h>
 #include "functions.h" 
 
-
+// Local functions
 int makeInt(const char* str, int* num);
 int callCommand(const char* opName, const char* parameter1, const char* parameter2);
 	
@@ -236,7 +236,7 @@ int callCommand(const char* opName, const char* parameter1, const char* paramete
 			return 1;
 		}
 
-		if (andCells(parameter1, parameter2))
+		if (andArrays(parameter1, parameter2))
 		{
 			return 3;
 		}
@@ -251,7 +251,7 @@ int callCommand(const char* opName, const char* parameter1, const char* paramete
 			return 1;
 		}
 
-		if (xorCells(parameter1, parameter2))
+		if (xorArrays(parameter1, parameter2))
 		{
 			return 3;
 		}
