@@ -5,7 +5,8 @@
 
 #define MEM_CELLS 100
 
-#define MEM_OK 1
+#define MEM_OK 0
+#define MEM_ERROR 1
 
 /**
  * @file memory.h

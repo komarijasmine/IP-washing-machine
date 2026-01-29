@@ -23,7 +23,6 @@ struct Memory {
 /* Prints error messages */
 static void error(const char *msg) {
     fprintf(stderr, "%s\n", msg);
-    exit(0);
 }
 
 /* Allocate a new free segment node. Returns NULL on failure */
@@ -103,27 +102,27 @@ static void combine(FreeSeg *head) {
 
 /* Validate index i within memory */
 static int addrOK(int addr) {
-	return addr >= 0 && addr < MEM_CELLS;
+	return (addr >= 0 && addr < MEM_CELLS);
 }
 
 /* Validate index addr within allocated block */
 static int isAllocated(int addr) {
 	if (m == NULL) {
-		return 0;
+		return MEM_ERROR;
 	}
 
 	if(!addrOK(addr)) {
-		return 0;
+		return MEM_ERROR;
 	}
 
 	FreeSeg *cur = m->free_list;
 	while (cur != NULL) {
 		if (addr >= cur->start && addr < cur->start + cur->len) {
-			return 0;
+			return MEM_ERROR;
 		}
 		cur = cur->next;
 	}
-	return 1;  // not found in the free list so its allocated
+	return MEM_OK;  // not found in the free list so its allocated
 }
 
 
@@ -137,6 +136,7 @@ int memInit(void) {
 	m = malloc(sizeof(Memory));
 	if (m == NULL) {
 		error("Not enough memory.");
+		return MEM_ERROR;
 	}
 
 	for (int i = 0; i< MEM_CELLS; i++) {
@@ -147,6 +147,7 @@ int memInit(void) {
 	m->free_list = newSeg(0, MEM_CELLS);
 	if (m->free_list == NULL) {
 		error("Not enough memory.");
+		return MEM_ERROR;
 	}
 	return MEM_OK;
 }
@@ -172,9 +173,11 @@ void memFree(void) {
 int memAlloc(int n, int *outStart) {
 	if (m == NULL || outStart == NULL) {
 		error("Wrong Memory Access.");
+		return MEM_ERROR;
 	}
 	if (n <= 0 || n > MEM_CELLS) {
 		error("Wrong Memory Access.");
+		return MEM_ERROR;
 	}
 	// Find best free segment (smallest with len >= n)
 	FreeSeg *prev = NULL;
@@ -203,6 +206,7 @@ int memAlloc(int n, int *outStart) {
 	// No segment large enough
 	if (best == NULL) {
 		error("Not enough memory.");
+		return MEM_ERROR;
 	}
 
 	int start = best->start;
@@ -237,23 +241,28 @@ int memAlloc(int n, int *outStart) {
 int memFreeBlock(int start, int len) {
 	if (m == NULL) {
 		error("Wrong Memory Access.");
+		return MEM_ERROR;
 	}
 	if (len <= 0) {
 		error("Wrong Memory Access.");
+		return MEM_ERROR;
 		
 	}
 	if (!addrOK(start) || !addrOK(start + len - 1)) {
 	       	error("Wrong Memory Access.");
+			return MEM_ERROR;
 	}
 
-	if (!isAllocated(start)) {
+	if (isAllocated(start)) {
 		error("Wrong Memory Access.");
+		return MEM_ERROR;
 	}
 
 	// Ensure entire block is allocated
 	for (int i = 0; i< len; i++) {
-		if (!isAllocated(start + i)) {
+		if (isAllocated(start + i)) {
 			error("Wrong Memory Access.");
+			return MEM_ERROR;
 		}
 	}
 
@@ -261,6 +270,7 @@ int memFreeBlock(int start, int len) {
 	FreeSeg *seg = newSeg(start, len);
 	if (seg == NULL) {
 		error("Wrong Memory Access.");
+		return MEM_ERROR;
 	}
 
 	// Insert in sorted order and handle overlap/adjacency
@@ -273,16 +283,19 @@ int memFreeBlock(int start, int len) {
 int memRead(int i, int *outValue) {
 	if (m == NULL || outValue == NULL) {
 		error("Wrong Memory Access.");
+		return MEM_ERROR;
 	}
 
 	// Ensure access within memory
 	if (!addrOK(i)) {
 		error("Wrong Memory Access.");
+		return MEM_ERROR;
 	}
 
 	// Ensure access within block
-	if (!isAllocated(i)) {
+	if (isAllocated(i)) {
 		error("Wrong Memory Access.");
+		return MEM_ERROR;
 	}
 
 	*outValue = m->cells[i];
@@ -292,15 +305,18 @@ int memRead(int i, int *outValue) {
 /* Safe write into block[i] */
 int memWrite(int i, int value) {
 	if (m == NULL) {
-		error("Wrong Memory Access.");
+		error("Wrong Memory Access: memory not initialized");
+		return MEM_ERROR;
 	}
 
 	if (!addrOK(i)) {
-		error("Wrong Memory Access.");
+		error("Wrong Memory Access: invalid address");
+		return MEM_ERROR;
 	}
 
-	if (!isAllocated(i)) {
-		error("Wrong Memory Access.");
+	if (isAllocated(i)) {
+		error("Wrong Memory Access: address not allocated");
+		return MEM_ERROR;
 	}
 
 	m->cells[i] = value;
@@ -311,14 +327,17 @@ int memWrite(int i, int value) {
 int memInc(int i) {
 	if (m == NULL) {
 		error("Wrong Memory Access.");
+		return MEM_ERROR;
 	}
 	
 	if (!addrOK(i)) {
 		error("Wrong Memory Access.");
+		return MEM_ERROR;
 	}
 
-	if (!isAllocated(i)) {
+	if (isAllocated(i)) {
 		error("Wrong Memory Access.");
+		return MEM_ERROR;
 	}
 
 	m->cells[i] += 1;
@@ -329,14 +348,17 @@ int memInc(int i) {
 int memDec(int i) {
 	if (m == NULL) {
 		error("Wrong Memory Access.");
+		return MEM_ERROR;
 	}
 	
 	if (!addrOK(i)) {
 		error("Wrong Memory Access.");
+		return MEM_ERROR;
 	}
 
-	if (!isAllocated(i)) {
+	if (isAllocated(i)) {
 		error("Wrong Memory Access.");
+		return MEM_ERROR;
 	}
 	m->cells[i] -= 1;
 	return MEM_OK;
