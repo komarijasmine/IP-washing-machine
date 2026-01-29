@@ -71,7 +71,7 @@ int fetchAddress(const char *arrayName, int index)
         return -2;
     }
 
-    fprintf(stderr, "Try to use variable that does not exist.\n");
+    fprintf(stderr, "Try to use a variable that does not exist.\n");
     // fprintf(stderr, "Error: no array with identifier %s exist\n", arrayName);
     return -1;
 }
@@ -118,7 +118,7 @@ int freeArrayName(const char *arrayName, int *addressAndLength)
         }
     }
 
-    fprintf(stderr, "Try to use variable that does not exist.\n");
+    fprintf(stderr, "Try to use a variable that does not exist.\n");
     // fprintf(stderr, "Error: no array with identifier %s exists\n", arrayName); 
     return 1;
 }
@@ -247,7 +247,7 @@ int dualArrayOperator(const char *arrayName1, const char *arrayName2, char opera
     Array *array1 = checkArray(arrayName1);
     if (!array1 || array1->address < 0)
     {
-        fprintf(stderr, "Try to use variable that does not exist.\n");
+        fprintf(stderr, "Try to use a variable that does not exist.\n");
         // fprintf(stderr, "Error: no array with identifier %s exist\n", arrayName1);
         return 1;
     }
@@ -255,7 +255,7 @@ int dualArrayOperator(const char *arrayName1, const char *arrayName2, char opera
     Array *array2 = checkArray(arrayName2);
     if (!array2 || array2->address < 0)
     {
-        fprintf(stderr, "Try to use variable that does not exist.\n");
+        fprintf(stderr, "Try to use a variable that does not exist.\n");
         // fprintf(stderr, "Error: no array with identifier %s exist\n", arrayName2);
         return 2;
     }
@@ -528,7 +528,7 @@ int printArray(const char *arrayName)
     Array *array = checkArray(arrayName);
     if (!array)
     {
-        fprintf(stderr, "Try to use variable that does not exist.\n");
+        fprintf(stderr, "Try to use a variable that does not exist.\n");
         // fprintf(stderr, "Error: no array with identifier %s exist\n", arrayName);
         return 1;
     }
