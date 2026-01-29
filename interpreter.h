@@ -3,7 +3,7 @@
 
 /* EFFECT: Interprets line with format "{Operator} {paramater1} {parameter2}" (note the whitespace 
 as delimiter), where parameter2 is optional based on the chosen operator. Executes the chosen 
-operater with supplied parameters.
+operater with supplied parameters. If _line_ is NULL, it returns 0.
 
 The possible operators are:
 Ass {string arrayName} {int number} - assigns _number_ to the first element of the array with 

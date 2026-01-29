@@ -17,17 +17,17 @@ typedef struct Array
 // Creates static HEAD to list with array identifiers
 static Array *arrays = NULL;
 
-Array *checkArray(char *arrayName);
-int fetchAdress(char *arrayName, int index);
-int freeArrayName(char *arrayName, int *addressAndLength);
-int getVals(char *arrayName1, char *arrayName2, int *vals);
+Array *checkArray(const char *arrayName);
+int fetchaddress(const char *arrayName, int index);
+int freeArrayName(const char *arrayName, int *addressAndLength);
+int getVals(const char *arrayName1, const char *arrayName2, int *vals);
 
-Array *checkArray(char *arrayName)
+Array *checkArray(const char *arrayName)
 {
     /* Local function 
     EFFECT: Checks whether an array with identifier _arrayName_ exists
     OUTPUT: The array of which the member .arrayName is equal to _arrayName_; 
-    NULL if no array with the identifier _arrayName_ exists */
+    NULL if no array with identifier _arrayName_ exists */
 
     if (arrays)
     {
@@ -43,37 +43,36 @@ Array *checkArray(char *arrayName)
         }
     }
 
-    fprintf(stderr, "No array with identifier %s exist\n", arrayName);
     return NULL;
 }
 
 
-int fetchAdress(char *arrayName, int index)
+int fetchaddress(const char *arrayName, int index)
 {
     /* Local function 
     EFFECT: Check whether the array with identifier _arrayName_ exists and whether index is within its range
-    OUTPUT: The adress in memory of the element with index _index_ of the array with the identifier _arrayName_; 
+    OUTPUT: The address in memory of the element with index _index_ of the array with the identifier _arrayName_; 
     -1 if no array with the identifier _arrayName_ exists; 
-    -2 if index is outside of the range of the array with the identifier _arrayName_ */
+    -2 if index is outside of the range of the array with identifier _arrayName_ */
 
     Array *array = checkArray(arrayName); 
     if (array)
     {
-        if (array->length > index)
+        if (index >= 0 && index < array->length)
         {
             return array->address + index;
         }
 
-        fprintf(stderr, "Index %d is outside of the range of the array with the identifier %s\n", index, arrayName);
+        fprintf(stderr, "Error: index %d is outside of the range of the array with identifier %s\n", index, arrayName);
         return -2;
     }
 
-    fprintf(stderr, "No array with identifier %s exist\n", arrayName); 
+    fprintf(stderr, "Error: no array with identifier %s exist\n", arrayName);
     return -1;
 }
 
 
-int freeArrayName(char *arrayName, int *addressAndLength)
+int freeArrayName(const char *arrayName, int *addressAndLength)
 {
     /* Local function
     EFFECT: Removes the element of the list with array identifiers of which the member .arrayName 
@@ -103,6 +102,7 @@ int freeArrayName(char *arrayName, int *addressAndLength)
                     arrays = array->next;
                 }
 
+                free(array->arrayName);
                 free(array);
 
                 return 0;
@@ -113,17 +113,17 @@ int freeArrayName(char *arrayName, int *addressAndLength)
         }
     }
 
-    fprintf(stderr, "No array with identifier %s exists\n", arrayName); 
+    fprintf(stderr, "Error: no array with identifier %s exists\n", arrayName); 
     return 1;
 }
 
 
-int getVals(char *arrayName1, char *arrayName2, int *vals)
+int getVals(const char *arrayName1, const char *arrayName2, int *vals)
 {
     /* Local function 
     EFFECT: Fetches the address in memory and the value of the first element of 2 arrays with the 
     identifier _arrayName1_ and _arrayName2_. This is stored in _vals_, where vals[0] is the memory 
-    adress of the array with the identifier _arrayName1_, vals[1] is the memory adress of the array 
+    address of the array with the identifier _arrayName1_, vals[1] is the memory address of the array 
     with the identifier _arrayName2_, vals[2] is the value of the first element of the array with 
     the identifier _arrayName1_, and vals[3] is the value of the first element of the array with 
     the identifier _arrayName2_
@@ -131,15 +131,15 @@ int getVals(char *arrayName1, char *arrayName2, int *vals)
     1 if fetching the memory address of the array with the identifier _arrayName1_ failed; 
     2 if fetching the memory address of the array with the identifier _arrayName2_ failed;
     3 if reading the memory cell of the first element of the array with the identifier _arrayName1_ failed,
-    4 if reading the memory cell of the first element of the array with the identifier _arrayName1_ failed */
+    4 if reading the memory cell of the first element of the array with the identifier _arrayName2_ failed */
 
-    vals[0] = fetchAdress(arrayName1, 0);
+    vals[0] = fetchaddress(arrayName1, 0);
     if (vals[0] < 0)
     {
         return 1;
     }
 
-    vals[1] = fetchAdress(arrayName2, 0);
+    vals[1] = fetchaddress(arrayName2, 0);
     if (vals[1] < 0)
     {
         return 2;
@@ -147,13 +147,13 @@ int getVals(char *arrayName1, char *arrayName2, int *vals)
 
     if (memRead(vals[0], &vals[2]))
     {
-        fprintf(stderr, "Reading the memory cell of the array with identifier %s with the adress %d failed\n", arrayName1, vals[0]);
+        fprintf(stderr, "Error: reading the memory cell of the array with identifier %s with the address %d failed\n", arrayName1, vals[0]);
         return 3;
     }
 
     if (memRead(vals[1], &vals[3]))
     {
-        fprintf(stderr, "Reading the memory cell of the array with identifier %s with the adress %d failed\n", arrayName2, vals[1]);
+        fprintf(stderr, "Error: reading the memory cell of the array with identifier %s with the address %d failed\n", arrayName2, vals[1]);
         return 4;
     }
 
@@ -166,7 +166,7 @@ int init(void)
     // Initialize the memory
     if (memInit())
     {
-        fprintf(stderr, "Initializing memory failed\n");
+        fprintf(stderr, "Error: initializing memory failed\n");
         return 1;
     }
 
@@ -179,10 +179,10 @@ int freeAll(void)
 	while (arrays)
 	{
 		// Frees the first element of _arrays_. _arrays_ points to the next element after removal
-		if (freeArray(arrays->arrayName))
+        char *arrayName = arrays->arrayName;
+		if (freeArray(arrayName))
 		{
 			memFree();
-			fprintf(stderr, "Freeing array failed\n");
 			return 1;
 		}
  	}
@@ -193,18 +193,18 @@ int freeAll(void)
 }
 
 
-int assign(char *arrayName, int value)
+int assign(const char *arrayName, int value)
 {
-    int address = fetchAdress(arrayName, 0);
+    int address = fetchaddress(arrayName, 0);
     if (address < 0)
     {
-        fprintf(stderr, "Fetching adress of the array with identifier %s failed\n", arrayName);       
+        fprintf(stderr, "Error: fetching address of the array with identifier %s failed\n", arrayName);       
         return 1;
     }
 
     if (memWrite(address, value))
     {
-        fprintf(stderr, "Writing to address %d of the array with identifier %s failed\n", address, arrayName);     
+        fprintf(stderr, "Error: writing to address %d of the array with identifier %s failed\n", address, arrayName);     
         return 2;
     }
 
@@ -212,18 +212,18 @@ int assign(char *arrayName, int value)
 }
 
 
-int increase(char *arrayName, int index)
+int increase(const char *arrayName, int index)
 {
-    int address = fetchAdress(arrayName, index);
+    int address = fetchaddress(arrayName, index);
     if (address < 0)
     {
-        fprintf(stderr, "Fetching adress of the array with identifier %s failed\n", arrayName);     
+        fprintf(stderr, "Error: fetching address of the array with identifier %s failed\n", arrayName);     
         return 1;
     }
 
     if (memInc(address))
     {
-        fprintf(stderr, "Increasing the value of the address %d of the array with identifier %s failed\n", address, arrayName);    
+        fprintf(stderr, "Error: increasing the value of the address %d of the array with identifier %s failed\n", address, arrayName);    
         return 2;
     }
 
@@ -231,18 +231,18 @@ int increase(char *arrayName, int index)
 }
 
 
-int decrease(char *arrayName, int index)
+int decrease(const char *arrayName, int index)
 {
-    int address = fetchAdress(arrayName, index);
+    int address = fetchaddress(arrayName, index);
     if (address < 0)
     {
-        fprintf(stderr, "Fetching adress of the array with identifier %s failed\n", arrayName);  
+        fprintf(stderr, "Error: fetching address of the array with identifier %s failed\n", arrayName);  
         return 1;
     }
 
     if (memDec(address))
     {
-        fprintf(stderr, "Decreasing the value of the address %d of the array with identifier %s failed\n", address, arrayName);    
+        fprintf(stderr, "Error: decreasing the value of the address %d of the array with identifier %s failed\n", address, arrayName);    
         return 2;
     }
 
@@ -250,17 +250,39 @@ int decrease(char *arrayName, int index)
 }
 
 
-int allocate(char *arrayName, int length)
+int allocate(const char *arrayName, int length)
 {
-    // Store _arrayName_ and its length _length_ and its adress in memory in the same element
-    Array *newElement = malloc(sizeof(Array));
-    if (!newElement)
+    if (length <= 0)
     {
-        fprintf(stderr, "Creating a new element to store array identifier %s failed\n", arrayName);
+        fprintf(stderr, "Error: invalid length %d of array", length);
         return 1;
     }
 
+    // Check that _arrayName_ doesn't already exist
+    if (checkArray(arrayName))
+    {
+        fprintf(stderr, "Error: array with identifier %s already exists", arrayName);
+        return 2;
+    }
+
+    // Store _arrayName_ and its length _length_ and its address in memory in the same element
+    Array *newElement = malloc(sizeof(Array));
+    if (!newElement)
+    {
+        fprintf(stderr, "Error: creating a new element to store array identifier %s failed\n", arrayName);
+        return 3;
+    }
+
+    // Create new char* _newElement_->arrayName and copy into this, as _arrayName_ will be deleted
+    // after the line is executed
     newElement->arrayName = strdup(arrayName);
+    if (!newElement->arrayName)
+    {
+        free(newElement);
+        fprintf(stderr, "Error: an error occured while allocating memory to store identifier %s", arrayName);
+        return 4;
+    }
+
     newElement->length = length;
     newElement->next = NULL;
 
@@ -268,8 +290,8 @@ int allocate(char *arrayName, int length)
     if (memAlloc(length, &(newElement->address)))
     {
         free(newElement);
-        fprintf(stderr, "Allocating memory for the array with identifier %s failed\n", arrayName);
-        return 2;
+        fprintf(stderr, "Error: allocating memory for the array with identifier %s failed\n", arrayName);
+        return 5;
     }
 
     // Set HEAD to _newElement_ as currently no other arrays
@@ -291,19 +313,19 @@ int allocate(char *arrayName, int length)
 }
 
 
-int printCell(char *arrayName, int index)
+int printCell(const char *arrayName, int index)
 {
-    int address = fetchAdress(arrayName, index);
+    int address = fetchaddress(arrayName, index);
     if (address < 0)
     {
-        fprintf(stderr, "Fetching adress of the array with identifier %s failed\n", arrayName);    
+        fprintf(stderr, "Error: fetching address of the array with identifier %s failed\n", arrayName);    
         return 1;
     }
 
     int val;
     if (memRead(address, &val))
     {
-        fprintf(stderr, "Reading the address %d of the array with identifier %s failed\n", address, arrayName);
+        fprintf(stderr, "Error: reading the address %d of the array with identifier %s failed\n", address, arrayName);
         return 2;
     }
 
@@ -313,7 +335,7 @@ int printCell(char *arrayName, int index)
 }
 
 
-int add(char *arrayName1, char *arrayName2)
+int add(const char *arrayName1, const char *arrayName2)
 {
     int vals[4];
     if (getVals(arrayName1, arrayName2, vals))
@@ -323,7 +345,7 @@ int add(char *arrayName1, char *arrayName2)
 
     if (memWrite(vals[0], vals[2] + vals[3]))
     {
-        fprintf(stderr, "Writing to adress %d of the array with identifier %s failed\n", vals[0], arrayName1);
+        fprintf(stderr, "Error: writing to address %d of the array with identifier %s failed\n", vals[0], arrayName1);
         return 2;
     }
 
@@ -331,7 +353,7 @@ int add(char *arrayName1, char *arrayName2)
 }
 
 
-int subtract(char *arrayName1, char *arrayName2)
+int subtract(const char *arrayName1, const char *arrayName2)
 {
     int vals[4];
     if (getVals(arrayName1, arrayName2, vals))
@@ -341,7 +363,7 @@ int subtract(char *arrayName1, char *arrayName2)
 
     if (memWrite(vals[0], vals[2] - vals[3]))
     {
-        fprintf(stderr, "Writing to adress %d of the array with identifier %s failed\n", vals[0], arrayName1);
+        fprintf(stderr, "Error: writing to address %d of the array with identifier %s failed\n", vals[0], arrayName1);
         return 2;
     }
 
@@ -349,7 +371,7 @@ int subtract(char *arrayName1, char *arrayName2)
 }
 
 
-int multiply(char *arrayName1, char *arrayName2)
+int multiply(const char *arrayName1, const char *arrayName2)
 {
     int vals[4];
     if (getVals(arrayName1, arrayName2, vals))
@@ -359,7 +381,7 @@ int multiply(char *arrayName1, char *arrayName2)
 
     if (memWrite(vals[0], vals[2] * vals[3]))
     {
-        fprintf(stderr, "Writing to adress %d of the array with identifier %s failed\n", vals[0], arrayName1);
+        fprintf(stderr, "Error: writing to address %d of the array with identifier %s failed\n", vals[0], arrayName1);
         return 2;
     }
 
@@ -367,7 +389,7 @@ int multiply(char *arrayName1, char *arrayName2)
 }
 
 
-int andCells(char *arrayName1, char *arrayName2)
+int andCells(const char *arrayName1, const char *arrayName2)
 {
     int vals[4];
     if (getVals(arrayName1, arrayName2, vals))
@@ -375,9 +397,9 @@ int andCells(char *arrayName1, char *arrayName2)
         return 1;
     }
 
-    if (memWrite(vals[0], (vals[2] * vals[3]) % 2))
+    if (memWrite(vals[0], vals[2] & vals[3]))
     {
-        fprintf(stderr, "Writing to adress %d of the array with identifier %s failed\n", vals[0], arrayName1);
+        fprintf(stderr, "Error: writing to address %d of the array with identifier %s failed\n", vals[0], arrayName1);
         return 2;
     }
 
@@ -385,7 +407,7 @@ int andCells(char *arrayName1, char *arrayName2)
 }
 
 
-int xorCells(char *arrayName1, char *arrayName2)
+int xorCells(const char *arrayName1, const char *arrayName2)
 {
     int vals[4];
     if (getVals(arrayName1, arrayName2, vals))
@@ -393,9 +415,9 @@ int xorCells(char *arrayName1, char *arrayName2)
         return 1;
     }
 
-    if (memWrite(vals[0], (vals[2] + vals[3]) % 2))
+    if (memWrite(vals[0], vals[2] ^ vals[3]))
     {
-        fprintf(stderr, "Writing to adress %d of the array with identifier %s failed\n", vals[0], arrayName1);
+        fprintf(stderr, "Error: writing to address %d of the array with identifier %s failed\n", vals[0], arrayName1);
         return 2;
     }
 
@@ -403,18 +425,18 @@ int xorCells(char *arrayName1, char *arrayName2)
 }
 
 
-int freeArray(char *arrayName)
+int freeArray(const char *arrayName)
 {
     int addressAndLength[2];
     if (freeArrayName(arrayName, addressAndLength))
     {
-        fprintf(stderr, "Freeing array with identifier %s failed\n", arrayName);
+        fprintf(stderr, "Error: freeing array with identifier %s failed\n", arrayName);
         return 1;
     }
 
     if (memFreeBlock(addressAndLength[0], addressAndLength[1]))
     {
-        fprintf(stderr, "Freeing memory of array with identifier %s failed\n", arrayName);
+        fprintf(stderr, "Error: freeing memory of array with identifier %s failed\n", arrayName);
         return 2;
     }
 
@@ -422,11 +444,12 @@ int freeArray(char *arrayName)
 }
 
 
-int printArray(char *arrayName)
+int printArray(const char *arrayName)
 {
     Array *array = checkArray(arrayName);
     if (!array)
     {
+        fprintf(stderr, "Error: no array with identifier %s exist\n", arrayName);
         return 1;
     }
 
@@ -436,7 +459,7 @@ int printArray(char *arrayName)
         int val;
         if (memRead(array->address + i, &val))
         {
-            fprintf(stderr, "Reading the address %d of the array with identifier %s failed\n", array->address + i, arrayName);
+            fprintf(stderr, "Error: reading the address %d of the array with identifier %s failed\n", array->address + i, arrayName);
             return 2;
         }
 

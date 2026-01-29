@@ -172,11 +172,11 @@ void memFree(void) {
 /* Allocate n cells using a best-fit policy (1 on success, 0 on failure) */
 int memAlloc(int n, int *outStart) {
 	if (m == NULL || outStart == NULL) {
-		error("Wrong Memory Access.");
+		error("Wrong Memory Access: memory or outvalue not initialized");
 		return MEM_ERROR;
 	}
 	if (n <= 0 || n > MEM_CELLS) {
-		error("Wrong Memory Access.");
+		error("Wrong Memory Access: invalid length to allocate");
 		return MEM_ERROR;
 	}
 	// Find best free segment (smallest with len >= n)
@@ -240,28 +240,28 @@ int memAlloc(int n, int *outStart) {
 /* Add a block to the free list and merge adjacent/overlapping segments */
 int memFreeBlock(int start, int len) {
 	if (m == NULL) {
-		error("Wrong Memory Access.");
+		error("Wrong Memory Access: memory or outvalue not initialized");
 		return MEM_ERROR;
 	}
 	if (len <= 0) {
-		error("Wrong Memory Access.");
+		error("Wrong Memory Access: invalid length of memory block");
 		return MEM_ERROR;
 		
 	}
 	if (!addrOK(start) || !addrOK(start + len - 1)) {
-	       	error("Wrong Memory Access.");
+	       	error("Wrong Memory Access: invalid address");
 			return MEM_ERROR;
 	}
 
 	if (isAllocated(start)) {
-		error("Wrong Memory Access.");
+		error("Wrong Memory Access: address not allocated");
 		return MEM_ERROR;
 	}
 
 	// Ensure entire block is allocated
 	for (int i = 0; i< len; i++) {
 		if (isAllocated(start + i)) {
-			error("Wrong Memory Access.");
+			error("Wrong Memory Access: address not allocated");
 			return MEM_ERROR;
 		}
 	}
@@ -282,19 +282,19 @@ int memFreeBlock(int start, int len) {
 /* Safe read of block[i] into *outValue */
 int memRead(int i, int *outValue) {
 	if (m == NULL || outValue == NULL) {
-		error("Wrong Memory Access.");
+		error("Wrong Memory Access: memory or outvalue not initialized");
 		return MEM_ERROR;
 	}
 
 	// Ensure access within memory
 	if (!addrOK(i)) {
-		error("Wrong Memory Access.");
+		error("Wrong Memory Access: invalid address");
 		return MEM_ERROR;
 	}
 
 	// Ensure access within block
 	if (isAllocated(i)) {
-		error("Wrong Memory Access.");
+		error("Wrong Memory Access: address not allocated");
 		return MEM_ERROR;
 	}
 
@@ -326,17 +326,17 @@ int memWrite(int i, int value) {
 /* Safe increment block[i]++ */
 int memInc(int i) {
 	if (m == NULL) {
-		error("Wrong Memory Access.");
+		error("Wrong Memory Access: memory not initialized");
 		return MEM_ERROR;
 	}
 	
 	if (!addrOK(i)) {
-		error("Wrong Memory Access.");
+		error("Wrong Memory Access: invalid address");
 		return MEM_ERROR;
 	}
 
 	if (isAllocated(i)) {
-		error("Wrong Memory Access.");
+		error("Wrong Memory Access: address not allocated");
 		return MEM_ERROR;
 	}
 
@@ -347,17 +347,17 @@ int memInc(int i) {
 /* Safe decrement block[i]-- */
 int memDec(int i) {
 	if (m == NULL) {
-		error("Wrong Memory Access.");
+		error("Wrong Memory Access: memory not initialized");
 		return MEM_ERROR;
 	}
 	
 	if (!addrOK(i)) {
-		error("Wrong Memory Access.");
+		error("Wrong Memory Access: invalid address");
 		return MEM_ERROR;
 	}
 
 	if (isAllocated(i)) {
-		error("Wrong Memory Access.");
+		error("Wrong Memory Access: address not allocated");
 		return MEM_ERROR;
 	}
 	m->cells[i] -= 1;
